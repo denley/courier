@@ -7,11 +7,11 @@ import me.denley.courier.Courier;
 
 public class PostalArea {
 
-    private static final String INDENT = "    ";
-    private static final String INDENT_2 = "        ";
-    private static final String INDENT_3 = "            ";
-    private static final String INDENT_4 = "                ";
-    private static final String INDENT_5 = "                    ";
+    public static final String INDENT = "    ";
+    public static final String INDENT_2 = "        ";
+    public static final String INDENT_3 = "            ";
+    public static final String INDENT_4 = "                ";
+    public static final String INDENT_5 = "                    ";
 
 
 

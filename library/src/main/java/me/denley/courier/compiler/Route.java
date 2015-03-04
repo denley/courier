@@ -14,18 +14,18 @@ public class Route {
 
     public void writeTo(StringBuilder builder, String indent) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
-        builder.append(indent).append("    ")
+        builder.append(indent).append(PostalArea.INDENT)
                 .append("final Object unpacked = Packager.unpack(data);\n");
-        builder.append(indent).append("    ").append("handler.post(new Runnable() {\n");
-        builder.append(indent).append("        ").append("public void run() {\n");
+        builder.append(indent).append(PostalArea.INDENT).append("handler.post(new Runnable() {\n");
+        builder.append(indent).append(PostalArea.INDENT_2).append("public void run() {\n");
 
         for(Recipient recipient:recipients) {
-            builder.append(indent).append("            ");
+            builder.append(indent).append(PostalArea.INDENT_3);
             recipient.writeTo(builder);
         }
 
-        builder.append(indent).append("        ").append("}\n");
-        builder.append(indent).append("    ").append("});\n");
+        builder.append(indent).append(PostalArea.INDENT_2).append("}\n");
+        builder.append(indent).append(PostalArea.INDENT).append("});\n");
         builder.append(indent).append("}");
     }
 
