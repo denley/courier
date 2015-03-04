@@ -23,12 +23,12 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public final class Courier {
 
-    private static final String CLASS_SUFFIX = "$$DeliveryBoy";
+    public static final String CLASS_SUFFIX = "$$Delivery";
     private static final Map<Class, DeliveryBoy> DELIVERY_STAFF = new LinkedHashMap<>();
 
     /** For use by generated code. Don't use this. */
     public interface DeliveryBoy<T> {
-        public void startReceiving(T target);
+        public void startReceiving(GoogleApiClient apiClient, T target);
         public void stopReceiving(T target);
     }
 
@@ -40,7 +40,7 @@ public final class Courier {
     public static void deliverData(final Context context, final String path, final Serializable data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
-                final PutDataRequest request = Packager.packageSerializable(path, data);
+                final PutDataRequest request = Packager.pack(path, data);
                 Wearable.DataApi.putDataItem(apiClient, request);
             }
         });
@@ -49,7 +49,7 @@ public final class Courier {
     public static void deliverMessage(final Context context, final String path, final Serializable data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
-                final byte[] bytes = Packager.packageSerializable(data);
+                final byte[] bytes = Packager.pack(data);
 
                 final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient).await().getNodes();
                 for(Node node:nodes) {
@@ -59,28 +59,14 @@ public final class Courier {
         });
     }
 
-    private static void makeWearableApiCall(final Context context, final WearableApiTask task) {
-        new Thread(){
-            public void run() {
-                final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
-                        .addApi(Wearable.API)
-                        .build();
-
-                final ConnectionResult result = apiClient.blockingConnect();
-
-                if(result.isSuccess()) {
-                    task.run(apiClient);
-                }
-            }
-        }.start();
-    }
-
-
-
-
     public static <T> void startReceiving(final Context context, final T target) {
         final DeliveryBoy<T> messenger = findDeliveryBoy(target);
-        messenger.startReceiving(target);
+
+        makeWearableApiCall(context, new WearableApiTask() {
+            @Override public void run(GoogleApiClient apiClient) {
+                messenger.startReceiving(apiClient, target);
+            }
+        });
     }
 
     public static <T> void stopReceiving(final T target) {
@@ -114,6 +100,21 @@ public final class Courier {
         startReceiving(target, target);
     }
 
+    private static void makeWearableApiCall(final Context context, final WearableApiTask task) {
+        new Thread(){
+            public void run() {
+                final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
+                        .addApi(Wearable.API)
+                        .build();
+
+                final ConnectionResult result = apiClient.blockingConnect();
+
+                if(result.isSuccess()) {
+                    task.run(apiClient);
+                }
+            }
+        }.start();
+    }
 
     @SuppressWarnings("unchecked")
     private static <T> DeliveryBoy<T> findDeliveryBoy(T target) {

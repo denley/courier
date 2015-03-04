@@ -27,12 +27,20 @@ public class MainActivity extends Activity  {
     }
 
     @ReceiveMessages("/value_change")
-    void onValueChange(String changeDescription) {
-        changeTextView.setText(changeDescription);
+    void onValueChange(final String changeDescription) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                changeTextView.setText(changeDescription);
+            }
+        });
     }
 
     @ReceiveData("/value")
-    void onNewValue(int value) {
-        valueTextView.setText(Integer.toString(value));
+    void onNewValue(final int value) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                valueTextView.setText(Integer.toString(value));
+            }
+        });
     }
 }

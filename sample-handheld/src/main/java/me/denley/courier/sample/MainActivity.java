@@ -31,9 +31,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     }
 
     @ReceiveData("/value")
-    void onNewValue(int value) {
+    void onNewValue(final int value) {
         this.value = value;
-        valueText.setText(Integer.toString(value));
+        runOnUiThread(new Runnable() {
+            public void run() {
+                valueText.setText(Integer.toString(value));
+            }
+        });
     }
 
     @Override public void onClick(View v) {
@@ -48,6 +52,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 break;
         }
 
-        Courier.deliverMessage(this, "/value", value);
+        Courier.deliverData(this, "/value", value);
     }
 }
