@@ -14,6 +14,8 @@ public class Route {
 
     public void writeTo(StringBuilder builder, String indent) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
+        builder.append(indent).append("    ")
+                .append("Object unpacked = Packager.unpack(data);\n");
 
         for(Recipient recipient:recipients) {
             builder.append(indent);

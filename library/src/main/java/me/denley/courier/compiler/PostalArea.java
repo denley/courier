@@ -157,13 +157,7 @@ public class PostalArea {
         builder.append(INDENT).append("private void deliverMessage(T target, MessageEvent message) {\n");
         builder.append(INDENT_2).append("final String path = message.getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = message.getData();\n\n");
-
-        // bind data
-        builder.append(INDENT_2);
-        for(Map.Entry<String, Route> entry : messageRoutes.entrySet()) {
-            entry.getValue().writeTo(builder, INDENT_2);
-        }
-
+        writeDataBindings(builder, messageRoutes);
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");
     }
@@ -195,28 +189,33 @@ public class PostalArea {
         builder.append(INDENT).append("private void deliverData(T target, DataItem item) {\n");
         builder.append(INDENT_2).append("final String path = item.getUri().getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = item.getData();\n\n");
-
-        // bind data
-        builder.append(INDENT_2);
-        for(Map.Entry<String, Route> entry : dataRoutes.entrySet()) {
-            entry.getValue().writeTo(builder, INDENT_2);
-        }
-
+        writeDataBindings(builder, dataRoutes);
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");
     }
 
     private void writeInitDataMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void initializeData(T target) {\n");
-        builder.append(INDENT_2).append("final Node localNode = Wearable.NodeApi.getLocalNode(apiClient).await().getNode();\n");
         builder.append(INDENT_2).append("final DataItemBuffer existingItems = Wearable.DataApi.getDataItems(apiClient).await();\n");
         builder.append(INDENT_2).append("for(DataItem item:existingItems) {\n");
-        builder.append(INDENT_3).append("if(!item.getUri().getHost().equals(localNode.getId())) {\n");
-        builder.append(INDENT_4).append("deliverData(target, item);\n");
-        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_3).append("deliverData(target, item);\n");
         builder.append(INDENT_2).append("}\n");
         builder.append(INDENT_2).append("existingItems.release();\n");
         builder.append(INDENT).append("}\n\n");
+    }
+
+    private void writeDataBindings (StringBuilder builder, Map<String, Route> routes) {
+        builder.append(INDENT_2);
+
+        boolean startedIfBlock = false;
+        for(Map.Entry<String, Route> entry : routes.entrySet()) {
+            if(startedIfBlock) {
+                builder.append(" else ");
+            }
+            startedIfBlock = true;
+
+            entry.getValue().writeTo(builder, INDENT_2);
+        }
     }
 
 }

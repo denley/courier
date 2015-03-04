@@ -21,11 +21,11 @@ public class Recipient {
         if(deliveryType==ElementKind.METHOD){
             builder.append("((")
                     .append(payloadType)
-                    .append(")Packager.unpack(data))");
+                    .append(")unpacked)");
         } else {
             builder.append(" = (")
                     .append(payloadType)
-                    .append(")Packager.unpack(data)");
+                    .append(")unpacked");
         }
 
         builder.append(";\n");
