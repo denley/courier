@@ -66,6 +66,9 @@ public class PostalArea {
         builder.append("import me.denley.courier.Courier;\n");
         builder.append("import me.denley.courier.Packager;\n");
         builder.append("\n");
+        builder.append("import android.os.Handler;\n");
+        builder.append("import android.os.Looper;\n");
+        builder.append("\n");
     }
 
     private void writeClassDef(StringBuilder builder) {
@@ -75,7 +78,9 @@ public class PostalArea {
                 .append(" <T extends ")
                 .append(targetClassName)
                 .append("> implements Courier.DeliveryBoy<T> {\n");
-        builder.append(INDENT).append("GoogleApiClient apiClient = null;\n\n");
+        builder.append(INDENT).append("GoogleApiClient apiClient = null;\n");
+        builder.append(INDENT).append("Handler handler = new Handler(Looper.getMainLooper());\n\n");
+
         writeListenerMaps(builder);
         writeStartReceivingMethod(builder);
         writeStopReceivingMethod(builder);
@@ -154,7 +159,7 @@ public class PostalArea {
     }
 
     private void writeDeliverMessageMethod(StringBuilder builder) {
-        builder.append(INDENT).append("private void deliverMessage(T target, MessageEvent message) {\n");
+        builder.append(INDENT).append("private void deliverMessage(final T target, final MessageEvent message) {\n");
         builder.append(INDENT_2).append("final String path = message.getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = message.getData();\n\n");
         writeDataBindings(builder, messageRoutes);
@@ -186,7 +191,7 @@ public class PostalArea {
     }
 
     private void writeDeliverDataMethod(StringBuilder builder) {
-        builder.append(INDENT).append("private void deliverData(T target, DataItem item) {\n");
+        builder.append(INDENT).append("private void deliverData(final T target, final DataItem item) {\n");
         builder.append(INDENT_2).append("final String path = item.getUri().getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = item.getData();\n\n");
         writeDataBindings(builder, dataRoutes);

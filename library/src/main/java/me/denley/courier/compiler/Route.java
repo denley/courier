@@ -15,14 +15,17 @@ public class Route {
     public void writeTo(StringBuilder builder, String indent) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
         builder.append(indent).append("    ")
-                .append("Object unpacked = Packager.unpack(data);\n");
+                .append("final Object unpacked = Packager.unpack(data);\n");
+        builder.append(indent).append("    ").append("handler.post(new Runnable() {\n");
+        builder.append(indent).append("        ").append("public void run() {\n");
 
         for(Recipient recipient:recipients) {
-            builder.append(indent);
-            builder.append("    ");
+            builder.append(indent).append("            ");
             recipient.writeTo(builder);
         }
 
+        builder.append(indent).append("        ").append("}\n");
+        builder.append(indent).append("    ").append("});\n");
         builder.append(indent).append("}");
     }
 

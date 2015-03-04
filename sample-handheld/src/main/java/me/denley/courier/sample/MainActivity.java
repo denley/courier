@@ -33,11 +33,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     @ReceiveData("/value")
     void onNewValue(final int value) {
         this.value = value;
-        runOnUiThread(new Runnable() {
-            public void run() {
-                valueText.setText(Integer.toString(value));
-            }
-        });
+        valueText.setText(Integer.toString(value));
     }
 
     @Override public void onClick(View v) {
