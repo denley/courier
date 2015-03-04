@@ -1,3 +1,8 @@
 <resources>
+
     <string name="app_name">Courier Sample</string>
+
+    <string name="action_up">Up</string>
+    <string name="action_down">Down</string>
+
 </resources>
