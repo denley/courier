@@ -4,7 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 ### Added
-- `@LocalNode` annotation to receive the local Node
+- `@LocalNode` annotation to receive the local `Node`
+- `@RemoteNodes` annotation to receive a list of connected `Node`s
 
 ## 0.1.0 - 2015-03-05
 ### Added

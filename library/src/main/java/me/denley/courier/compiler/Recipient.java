@@ -15,30 +15,25 @@ public class Recipient {
     }
 
     public void writeDataBindingTo(StringBuilder builder) {
-        builder.append("target.");
-        builder.append(recipientName);
-
-        if(deliveryType==ElementKind.METHOD){
-            builder.append("((")
-                    .append(payloadType)
-                    .append(")unpacked)");
-        } else {
-            builder.append(" = (")
-                    .append(payloadType)
-                    .append(")unpacked");
-        }
-
-        builder.append(";\n");
+        writeBindingTo(builder, "("+payloadType+")unpacked");
     }
 
     public void writeLocalNodeBindingTo(StringBuilder builder) {
+        writeBindingTo(builder, "localNode");
+    }
+
+    public void writeRemoteNodeBindingTo(StringBuilder builder) {
+        writeBindingTo(builder, "nodes");
+    }
+
+    private void writeBindingTo(StringBuilder builder, String sourceName) {
         builder.append("target.");
         builder.append(recipientName);
 
         if(deliveryType==ElementKind.METHOD){
-            builder.append("(localNode)");
+            builder.append("(").append(sourceName).append(")");
         } else {
-            builder.append(" = localNode");
+            builder.append(" = ").append(sourceName);
         }
 
         builder.append(";\n");

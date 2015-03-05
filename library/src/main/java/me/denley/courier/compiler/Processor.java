@@ -24,6 +24,7 @@ import me.denley.courier.Courier;
 import me.denley.courier.LocalNode;
 import me.denley.courier.ReceiveData;
 import me.denley.courier.ReceiveMessages;
+import me.denley.courier.RemoteNodes;
 
 public class Processor extends javax.annotation.processing.AbstractProcessor {
 
@@ -62,6 +63,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         processReceiveDataAnnotations(roundEnv);
         processReceiveMessagesAnnotations(roundEnv);
         processLocalNodeAnnotations(roundEnv);
+        processRemotelNodeAnnotations(roundEnv);
         writeClasses();
         return true;
     }
@@ -86,6 +88,12 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         }
     }
 
+    private void processRemotelNodeAnnotations(RoundEnvironment roundEnv) {
+        for(Element element:roundEnv.getElementsAnnotatedWith(RemoteNodes.class)) {
+            processElementOrFail(element, null, RemoteNodes.class);
+        }
+    }
+
     private void processElementOrFail(Element element, String path, Class annotationClass) {
         try {
             processElement(element, path, annotationClass);
@@ -102,6 +110,8 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
 
         if(annotationClass==LocalNode.class) {
             area.addLocalNodeRecipient(recipient);
+        } else if (annotationClass==RemoteNodes.class) {
+            area.addRemoteNodeRecipient(recipient);
         } else {
             final Route route = area.getRoute(path, annotationClass==ReceiveData.class);
             route.recipients.add(recipient);
@@ -126,6 +136,9 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
                 } else if(annotationClass==LocalNode.class
                         && !parameters.get(0).asType().toString().equals(Node.class.getName())) {
                     throw new IllegalArgumentException("@LocalNode annotated method must have a parameter that is a "+Node.class.getName());
+                } else if(annotationClass==RemoteNodes.class
+                        && !parameters.get(0).asType().toString().equals("java.util.List<com.google.android.gms.wearable.Node>")) {
+                    throw new IllegalArgumentException("@RemoteNode annotated method must have a parameter that is a List<Node>");
                 }
                 break;
             case FIELD:
@@ -135,6 +148,9 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
                     throw new IllegalArgumentException("Annotated fields must not be private, static, nor final");
                 } else if(annotationClass==LocalNode.class && !element.asType().toString().equalsIgnoreCase(Node.class.getName())) {
                     throw new IllegalArgumentException("@LocalNode annotated field must be a "+Node.class.getName());
+                } else if(annotationClass==RemoteNodes.class
+                        && !element.asType().toString().equalsIgnoreCase("java.util.List<com.google.android.gms.wearable.Node>")) {
+                    throw new IllegalArgumentException("@LocalNode annotated field must be a List<Node>");
                 }
                 break;
             default:

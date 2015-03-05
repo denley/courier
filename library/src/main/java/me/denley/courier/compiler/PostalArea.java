@@ -28,9 +28,14 @@ public class PostalArea {
     private final Map<String, Route> dataRoutes = new LinkedHashMap<>();
     private final Map<String, Route> messageRoutes = new LinkedHashMap<>();
     private final Set<Recipient> localNodeRecipients = new LinkedHashSet<>();
+    private final Set<Recipient> remoteNodeRecipients = new LinkedHashSet<>();
 
     public void addLocalNodeRecipient(Recipient recipient) {
         localNodeRecipients.add(recipient);
+    }
+
+    public void addRemoteNodeRecipient(Recipient recipient) {
+        remoteNodeRecipients.add(recipient);
     }
 
     public Route getRoute(final String path, final boolean isData) {
@@ -69,6 +74,7 @@ public class PostalArea {
         builder.append("\n");
         builder.append("import java.util.LinkedHashMap;\n");
         builder.append("import java.util.Map;\n");
+        builder.append("import java.util.List;\n");
         builder.append("\n");
         builder.append("import me.denley.courier.Courier;\n");
         builder.append("import me.denley.courier.Packager;\n");
@@ -98,6 +104,10 @@ public class PostalArea {
             writeInitMessageListenerMethod(builder);
             writeDeliverMessageMethod(builder);
         }
+        if(!remoteNodeRecipients.isEmpty() || !dataRoutes.isEmpty()) {
+            writeInitNodeListenerMethod(builder);
+            writeDeliverRemoteNodesMethod(builder);
+        }
         if(!dataRoutes.isEmpty()) {
             writeInitDataListenerMethod(builder);
             writeDeliverDataMethod(builder);
@@ -122,6 +132,9 @@ public class PostalArea {
         builder.append(INDENT_2).append("this.apiClient = apiClient;\n");
         if(!localNodeRecipients.isEmpty()) {
             builder.append(INDENT_2).append("initLocalNodes(target);\n");
+        }
+        if(!remoteNodeRecipients.isEmpty() || !dataRoutes.isEmpty()) {
+            builder.append(INDENT_2).append("initNodeListener(target);\n");
         }
         if(!messageRoutes.isEmpty()) {
             builder.append(INDENT_2).append("initMessageListener(target);\n");
@@ -195,16 +208,45 @@ public class PostalArea {
         builder.append(INDENT).append("}\n\n");
     }
 
-    private void writeInitDataListenerMethod(StringBuilder builder) {
-        builder.append(INDENT).append("private void initDataListener(final T target) {\n");
+    private void writeInitNodeListenerMethod(StringBuilder builder) {
+        builder.append(INDENT).append("private void initNodeListener(final T target) {\n");
         builder.append(INDENT_2).append("final NodeApi.NodeListener nl = new NodeApi.NodeListener() {\n");
         builder.append(INDENT_3).append("@Override public void onPeerConnected(Node node) {\n");
-        builder.append(INDENT_4).append("initializeData(target);\n");
+        builder.append(INDENT_4).append("deliverRemoteNodes(target);\n");
+        if(!dataRoutes.isEmpty()) {
+            builder.append(INDENT_4).append("initializeData(target);\n");
+        }
         builder.append(INDENT_3).append("}\n");
-        builder.append(INDENT_3).append("@Override public void onPeerDisconnected(Node node) {}\n");
+        builder.append(INDENT_3).append("@Override public void onPeerDisconnected(Node node) {\n");
+        builder.append(INDENT_4).append("deliverRemoteNodes(target);\n");
+        builder.append(INDENT_3).append("}\n");
         builder.append(INDENT_2).append("};\n");
         builder.append(INDENT_2).append("nodeListeners.put(target, nl);\n");
         builder.append(INDENT_2).append("Wearable.NodeApi.addListener(apiClient, nl);\n\n");
+        if(!remoteNodeRecipients.isEmpty()) {
+            builder.append(INDENT_2).append("deliverRemoteNodes(target);\n");
+        }
+        builder.append(INDENT).append("}\n\n");
+    }
+
+    private void writeDeliverRemoteNodesMethod(StringBuilder builder) {
+        builder.append(INDENT).append("private void deliverRemoteNodes(final T target) {\n");
+
+        builder.append(INDENT_2).append("final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient)\n");
+        builder.append(INDENT_4).append(".await().getNodes();\n\n");
+        builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
+        builder.append(INDENT_3).append("public void run() {\n");
+        for(Recipient localNodeRecipient:remoteNodeRecipients) {
+            builder.append(INDENT_4);
+            localNodeRecipient.writeRemoteNodeBindingTo(builder);
+        }
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
+        builder.append(INDENT).append("}\n\n");
+    }
+
+    private void writeInitDataListenerMethod(StringBuilder builder) {
+        builder.append(INDENT).append("private void initDataListener(final T target) {\n");
         builder.append(INDENT_2).append("final DataApi.DataListener dl = new DataApi.DataListener(){\n");
         builder.append(INDENT_3).append("@Override public void onDataChanged(DataEventBuffer dataEvents) {\n");
         builder.append(INDENT_4).append("for(DataEvent event:dataEvents) {\n");
