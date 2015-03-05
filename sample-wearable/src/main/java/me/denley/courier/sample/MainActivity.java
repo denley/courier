@@ -4,11 +4,17 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.google.android.gms.wearable.Node;
+
 import me.denley.courier.Courier;
+import me.denley.courier.LocalNode;
 import me.denley.courier.ReceiveData;
 import me.denley.courier.ReceiveMessages;
 
 public class MainActivity extends Activity  {
+
+    @LocalNode
+    Node localNode;
 
     TextView changeTextView, valueTextView;
 

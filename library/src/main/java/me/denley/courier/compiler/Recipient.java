@@ -14,7 +14,7 @@ public class Recipient {
         this.payloadType = payload;
     }
 
-    public void writeTo(StringBuilder builder) {
+    public void writeDataBindingTo(StringBuilder builder) {
         builder.append("target.");
         builder.append(recipientName);
 
@@ -26,6 +26,19 @@ public class Recipient {
             builder.append(" = (")
                     .append(payloadType)
                     .append(")unpacked");
+        }
+
+        builder.append(";\n");
+    }
+
+    public void writeLocalNodeBindingTo(StringBuilder builder) {
+        builder.append("target.");
+        builder.append(recipientName);
+
+        if(deliveryType==ElementKind.METHOD){
+            builder.append("(localNode)");
+        } else {
+            builder.append(" = localNode");
         }
 
         builder.append(";\n");

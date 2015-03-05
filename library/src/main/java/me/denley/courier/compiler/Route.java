@@ -21,7 +21,7 @@ public class Route {
 
         for(Recipient recipient:recipients) {
             builder.append(indent).append(PostalArea.INDENT_3);
-            recipient.writeTo(builder);
+            recipient.writeDataBindingTo(builder);
         }
 
         builder.append(indent).append(PostalArea.INDENT_2).append("}\n");

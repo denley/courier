@@ -1,7 +1,9 @@
 package me.denley.courier.compiler;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import me.denley.courier.Courier;
 
@@ -25,6 +27,11 @@ public class PostalArea {
 
     private final Map<String, Route> dataRoutes = new LinkedHashMap<>();
     private final Map<String, Route> messageRoutes = new LinkedHashMap<>();
+    private final Set<Recipient> localNodeRecipients = new LinkedHashSet<>();
+
+    public void addLocalNodeRecipient(Recipient recipient) {
+        localNodeRecipients.add(recipient);
+    }
 
     public Route getRoute(final String path, final boolean isData) {
         Route route = (isData?dataRoutes:messageRoutes).get(path);
@@ -84,6 +91,9 @@ public class PostalArea {
         writeListenerMaps(builder);
         writeStartReceivingMethod(builder);
         writeStopReceivingMethod(builder);
+        if(!localNodeRecipients.isEmpty()) {
+            writeInitLocalNodesMethod(builder);
+        }
         if(!messageRoutes.isEmpty()) {
             writeInitMessageListenerMethod(builder);
             writeDeliverMessageMethod(builder);
@@ -110,6 +120,9 @@ public class PostalArea {
     private void writeStartReceivingMethod(StringBuilder builder) {
         builder.append(INDENT).append("public void startReceiving(final GoogleApiClient apiClient, final T target) {\n");
         builder.append(INDENT_2).append("this.apiClient = apiClient;\n");
+        if(!localNodeRecipients.isEmpty()) {
+            builder.append(INDENT_2).append("initLocalNodes(target);\n");
+        }
         if(!messageRoutes.isEmpty()) {
             builder.append(INDENT_2).append("initMessageListener(target);\n");
         }
@@ -140,6 +153,17 @@ public class PostalArea {
             builder.append(INDENT_2).append("if(nl!=null) {\n");
             builder.append(INDENT_3).append("Wearable.NodeApi.removeListener(apiClient, nl);\n");
             builder.append(INDENT_2).append("}\n\n");
+        }
+        builder.append(INDENT).append("}\n\n");
+    }
+
+    private void writeInitLocalNodesMethod(StringBuilder builder) {
+        builder.append(INDENT).append("private void initLocalNodes(final T target) {\n");
+        builder.append(INDENT_2).append("final Node localNode = Wearable.NodeApi.getLocalNode(apiClient)\n");
+        builder.append(INDENT_4).append(".await().getNode();\n");
+        for(Recipient localNodeRecipient:localNodeRecipients) {
+            builder.append(INDENT_2);
+            localNodeRecipient.writeLocalNodeBindingTo(builder);
         }
         builder.append(INDENT).append("}\n\n");
     }
