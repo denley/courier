@@ -1,11 +1,58 @@
 # Courier
-A delivery service for Android Wear. Courier uses the DataApi and MessageApi to deliver objects between devices simply and cleanly.
+A delivery service for Android Wear. Courier uses `Wearable.DataApi` and `Wearable.MessageApi` to deliver objects between devices simply and cleanly.
 
 
-Usage
+Sample Usage
 -------
 
-TODO: Watch this space
+Simply add `@ReceiveMessages` and `@ReceiveData` annotations to your methods and fields to assign them as callbacks for `MessageApi` and `DataApi` events. Call `Courier.startReceiving(this)` to initialize the listeners and start receiving your callbacks. `@DeliverData` callbacks will be invoked immediately, and whenever the device connects to a `Node`. `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi`.
+
+```java
+public class MainActivity extends Activity  {
+
+    @ReceiveData("/username")
+    String loggedInUser;
+
+    @Override protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Courier.startReceiving(this);
+    }
+
+    @Override protected void onDestroy() {
+        super.onDestroy();
+        Courier.stopReceiving(this);
+    }
+
+    @ReceiveMessages("/incoming_sms")
+    void onSmsReceived(final SmsDescriptor smsMessage) {
+        // show the message
+        // ...
+    }
+
+}
+```
+
+<br/>
+On the other device, use `Courier.deliverMessage` and `Courier.deliverData` to easily send data using the `MessageApi` and `DataApi`, respectively
+
+```java
+public void onLoginSuccess(String username) {
+    Courier.deliverData(this, "/username", username);
+}
+```
+
+
+Build Configuration
+-------
+
+Using the jcenter repository, add the following line to the gradle dependencies for your module.
+```groovy
+compile 'me.denley.courier:courier:0.1.0'
+```
+
+
 
 License
 -------
