@@ -2,8 +2,10 @@
 A delivery service for Android Wear. Courier uses `Wearable.DataApi` and `Wearable.MessageApi` to deliver objects between devices simply and cleanly.
 
 
-Sample Usage
+Usage
 -------
+
+### Basic Usage
 
 Simply add `@ReceiveMessages` and `@ReceiveData` annotations to your methods and fields to assign them as callbacks for `MessageApi` and `DataApi` events. Call `Courier.startReceiving(this)` to initialize the listeners and start receiving your callbacks.
 
@@ -44,12 +46,32 @@ public void onLoginSuccess(String username) {
 ```
 
 
+### Nodes (Connected Devices)
+
+You can retrieve a list of connected devices using the `@RemoteNodes` annotation. When devices are connected or disconnected, the callback will be invoked again.
+
+```java
+@RemoteNodes
+void onConnectionStateChanged(List<Node> connectedNodes) {
+    // Do something with the nodes
+    // ...
+}
+```
+
+You can also retrieve the local node using the `@LocalNode` annotation. This will only be updated once, as it never changes.
+
+```java
+@LocalNode
+Node localNode;
+```
+
+
 Build Configuration
 -------
 
 Using the jcenter repository, add the following line to the gradle dependencies for your module.
 ```groovy
-compile 'me.denley.courier:courier:0.1.0'
+compile 'me.denley.courier:courier:0.2.0'
 ```
 
 Details
