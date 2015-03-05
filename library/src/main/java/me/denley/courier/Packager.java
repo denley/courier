@@ -30,7 +30,7 @@ public final class Packager {
 
             return bytes.toByteArray();
         }catch (IOException e){
-            return new byte[0];
+            throw new IllegalArgumentException("Unable to serialize object");
         }
     }
 
@@ -42,12 +42,9 @@ public final class Packager {
 
             return (T)in.readObject();
         }catch (Exception e){
-            return null;
+            throw new IllegalArgumentException("Unable to deserialize object");
         }
     }
-
-
-
 
 
     private Packager(){}
