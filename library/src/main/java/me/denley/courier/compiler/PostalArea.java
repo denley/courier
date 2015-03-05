@@ -121,8 +121,10 @@ public class PostalArea {
             builder.append(INDENT).append("Map<T, MessageApi.MessageListener> messageListeners = new LinkedHashMap<T, MessageApi.MessageListener>();\n");
         }
         if(!dataRoutes.isEmpty()) {
-            builder.append(INDENT).append("Map<T, NodeApi.NodeListener> nodeListeners = new LinkedHashMap<T, NodeApi.NodeListener>();\n");
             builder.append(INDENT).append("Map<T, DataApi.DataListener> dataListeners = new LinkedHashMap<T, DataApi.DataListener>();\n");
+        }
+        if(!remoteNodeRecipients.isEmpty() || !dataRoutes.isEmpty()) {
+            builder.append(INDENT).append("Map<T, NodeApi.NodeListener> nodeListeners = new LinkedHashMap<T, NodeApi.NodeListener>();\n");
         }
         builder.append("\n");
     }
@@ -161,7 +163,8 @@ public class PostalArea {
             builder.append(INDENT_2).append("if(dl!=null) {\n");
             builder.append(INDENT_3).append("Wearable.DataApi.removeListener(apiClient, dl);\n");
             builder.append(INDENT_2).append("}\n\n");
-
+        }
+        if(!remoteNodeRecipients.isEmpty() || !dataRoutes.isEmpty()) {
             builder.append(INDENT_2).append("NodeApi.NodeListener nl = nodeListeners.remove(target);\n");
             builder.append(INDENT_2).append("if(nl!=null) {\n");
             builder.append(INDENT_3).append("Wearable.NodeApi.removeListener(apiClient, nl);\n");
