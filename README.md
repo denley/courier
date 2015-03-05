@@ -5,7 +5,7 @@ A delivery service for Android Wear. Courier uses `Wearable.DataApi` and `Wearab
 Sample Usage
 -------
 
-Simply add `@ReceiveMessages` and `@ReceiveData` annotations to your methods and fields to assign them as callbacks for `MessageApi` and `DataApi` events. Call `Courier.startReceiving(this)` to initialize the listeners and start receiving your callbacks. `@DeliverData` callbacks will be invoked immediately, and whenever the device connects to a `Node`. `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi`.
+Simply add `@ReceiveMessages` and `@ReceiveData` annotations to your methods and fields to assign them as callbacks for `MessageApi` and `DataApi` events. Call `Courier.startReceiving(this)` to initialize the listeners and start receiving your callbacks.
 
 ```java
 public class MainActivity extends Activity  {
@@ -52,7 +52,13 @@ Using the jcenter repository, add the following line to the gradle dependencies 
 compile 'me.denley.courier:courier:0.1.0'
 ```
 
+Details
+-------
 
+- All callbacks are made on the main thread.
+- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving`, and also whenever the device connects to a device through the `Wearable` api.
+- `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi`.
+- Transferred objects are serialized in a raw form (objects must implement java`s `Serializable` interface). This is high priority issue as it limits forward compatibility. It will be addressed before the first stable release.
 
 License
 -------
