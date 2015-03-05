@@ -58,7 +58,7 @@ Details
 - All callbacks are made on the main thread.
 - `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving`, and also whenever the device connects to a device through the `Wearable` api.
 - `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi`.
-- Transferred objects are serialized in a raw form (objects must implement java`s `Serializable` interface). This is high priority issue as it limits forward compatibility. It will be addressed before the first stable release.
+- Transferred objects are serialized in a raw form (objects must implement java's ``Serializable` interface). This is high priority issue as it limits forward compatibility. It will be addressed before the first stable release.
 
 License
 -------
