@@ -160,11 +160,15 @@ public class PostalArea {
     private void writeInitLocalNodesMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void initLocalNodes(final T target) {\n");
         builder.append(INDENT_2).append("final Node localNode = Wearable.NodeApi.getLocalNode(apiClient)\n");
-        builder.append(INDENT_4).append(".await().getNode();\n");
+        builder.append(INDENT_4).append(".await().getNode();\n\n");
+        builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
+        builder.append(INDENT_3).append("public void run() {\n");
         for(Recipient localNodeRecipient:localNodeRecipients) {
-            builder.append(INDENT_2);
+            builder.append(INDENT_4);
             localNodeRecipient.writeLocalNodeBindingTo(builder);
         }
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
         builder.append(INDENT).append("}\n\n");
     }
 
