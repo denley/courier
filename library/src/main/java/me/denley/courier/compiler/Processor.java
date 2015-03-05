@@ -55,6 +55,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         set.add(ReceiveData.class.getName());
         set.add(ReceiveMessages.class.getName());
         set.add(LocalNode.class.getName());
+        set.add(RemoteNodes.class.getName());
         return set;
     }
 
