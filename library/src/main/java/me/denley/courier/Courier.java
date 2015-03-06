@@ -52,9 +52,18 @@ public final class Courier {
                 final byte[] bytes = Packager.pack(data);
 
                 final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient).await().getNodes();
-                for(Node node:nodes) {
+                for (Node node : nodes) {
                     Wearable.MessageApi.sendMessage(apiClient, node.getId(), path, bytes);
                 }
+            }
+        });
+    }
+
+    public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Serializable data) {
+        makeWearableApiCall(context, new WearableApiTask() {
+            @Override public void run(GoogleApiClient apiClient) {
+                final byte[] bytes = Packager.pack(data);
+                Wearable.MessageApi.sendMessage(apiClient, destinationNodeId, path, bytes);
             }
         });
     }

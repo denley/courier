@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.0 - 2015-03-06
+### Added
+- Messages can now be send to a specific node
+
 ## 0.2.1 - 2015-03-05
 ### Fixed
 - Only having `@RemoteNodes` annotations now triggers the annotation processor
