@@ -72,7 +72,7 @@ Build Configuration
 
 Using the jcenter repository, add the following line to the gradle dependencies for your module.
 ```groovy
-compile 'me.denley.courier:courier:0.4.0'
+compile 'me.denley.courier:courier:0.4.1'
 ```
 
 Details

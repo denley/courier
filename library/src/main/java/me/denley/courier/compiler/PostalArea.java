@@ -268,7 +268,7 @@ public class PostalArea {
         builder.append(INDENT).append("private void deliverData(final T target, final DataItem item) {\n");
         builder.append(INDENT_2).append("final String path = item.getUri().getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = item.getData();\n");
-        builder.append(INDENT_2).append("final String node = item.getUri().getScheme();\n\n");
+        builder.append(INDENT_2).append("final String node = item.getUri().getHost();\n\n");
 
         writeDataBindings(builder, dataRoutes);
         builder.append("\n");
