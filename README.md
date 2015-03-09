@@ -28,8 +28,7 @@ public class MainActivity extends Activity  {
     }
 
     @ReceiveMessages("/incoming_sms")
-    void onSmsReceived(final SmsDescriptor smsMessage) {
-        // show the message
+    void onSmsReceived(SmsDescriptor smsMessage, String nodeId) { // The nodeId parameter is optional
         // ...
     }
 
@@ -65,22 +64,26 @@ You can also retrieve the local node using the `@LocalNode` annotation. This wil
 Node localNode;
 ```
 
+Alternatively, you can retrieve the local node by calling `Courier.getLocalNode(context)`. This must be done on a background thread.
+
 
 Build Configuration
 -------
 
 Using the jcenter repository, add the following line to the gradle dependencies for your module.
 ```groovy
-compile 'me.denley.courier:courier:0.3.0'
+compile 'me.denley.courier:courier:0.4.0'
 ```
 
 Details
 -------
 
 - All callbacks are made on the main thread.
-- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving`, and also whenever the device connects to a device through the `Wearable` api.
-- `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi`.
+- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving`, but asynchronously.
+- `@DeliverData` callbacks will also be called immediately when the device connects to another device.
+- `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi` (they are missed if the device is disconnected).
 - Transferred objects are serialized in a raw form (objects must implement java's ``Serializable` interface). This is high priority issue as it limits forward compatibility. It will be addressed before the first stable release.
+- If an empty message is sent or if a data item is removed, a `null` object will be passed to the listener. Be sure to check for `null` values.
 
 License
 -------
