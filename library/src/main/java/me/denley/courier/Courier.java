@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
@@ -86,6 +87,24 @@ public final class Courier {
                 Wearable.DataApi.deleteDataItems(apiClient, uri.build());
             }
         });
+    }
+
+    public static Node getLocalNode(final Context context) {
+        if(Looper.myLooper()==Looper.getMainLooper()) {
+            throw new IllegalStateException("getLocalNode can not be called from the UI thread");
+        }
+
+        final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
+                .addApi(Wearable.API)
+                .build();
+
+        final ConnectionResult result = apiClient.blockingConnect();
+
+        if(result.isSuccess()) {
+            return Wearable.NodeApi.getLocalNode(apiClient).await().getNode();
+        } else {
+            return null;
+        }
     }
 
     public static <T> void startReceiving(final Context context, final T target) {

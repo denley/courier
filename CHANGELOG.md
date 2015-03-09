@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.0 - Unreleased
+### Added
+- `Courier.deleteData` method to delete items from the `DataApi`
+- `Courier.getLocalNode` method to retrieve the `Node` representation of the current device
+
 ## 0.3.0 - 2015-03-06
 ### Added
 - Messages can now be send to a specific node
