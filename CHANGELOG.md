@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `Courier.deleteData` method to delete items from the `DataApi`
 - `Courier.getLocalNode` method to retrieve the `Node` representation of the current device
 
+### Changed
+- `ReceiveMessages` and `ReceiveData` annotated methods may now contain a second parameter: A `String` representing the ID of the originating node.
+
 ## 0.3.0 - 2015-03-06
 ### Added
 - Messages can now be send to a specific node

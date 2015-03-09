@@ -132,8 +132,13 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
                 if(modifiers.contains(Modifier.PRIVATE)
                         || modifiers.contains(Modifier.STATIC)) {
                     throw new IllegalArgumentException("Annotated methods must not be private or static");
-                } else if (parameters.size() != 1) {
-                    throw new IllegalArgumentException("Annotated methods must have a single parameter");
+                } else if (parameters.size() > 2
+                        || (parameters.size() < 1 && (annotationClass==ReceiveMessages.class || annotationClass==ReceiveData.class))) {
+                    throw new IllegalArgumentException("Incorrect number of parameters for method.");
+                } else if (parameters.size()==2
+                        && (annotationClass==ReceiveMessages.class || annotationClass==ReceiveData.class)
+                        && !parameters.get(1).asType().toString().equals(String.class.getName())) {
+                    throw new IllegalArgumentException("The second parameter must be a String (represents the source node ID)");
                 } else if(annotationClass==LocalNode.class
                         && !parameters.get(0).asType().toString().equals(Node.class.getName())) {
                     throw new IllegalArgumentException("@LocalNode annotated method must have a parameter that is a "+Node.class.getName());
@@ -169,7 +174,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
             final List<? extends VariableElement> params = executableElement.getParameters();
             final String name = element.getSimpleName().toString();
             final String payload = params.get(0).asType().toString();
-            return new Recipient(name, ElementKind.METHOD, payload);
+            return new Recipient(name, ElementKind.METHOD, payload, params.size()>1);
         }
     }
 

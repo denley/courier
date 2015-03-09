@@ -205,7 +205,8 @@ public class PostalArea {
     private void writeDeliverMessageMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void deliverMessage(final T target, final MessageEvent message) {\n");
         builder.append(INDENT_2).append("final String path = message.getPath();\n");
-        builder.append(INDENT_2).append("final byte[] data = message.getData();\n\n");
+        builder.append(INDENT_2).append("final byte[] data = message.getData();\n");
+        builder.append(INDENT_2).append("final String node = message.getSourceNodeId();\n\n");
         writeDataBindings(builder, messageRoutes);
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");
@@ -266,7 +267,9 @@ public class PostalArea {
     private void writeDeliverDataMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void deliverData(final T target, final DataItem item) {\n");
         builder.append(INDENT_2).append("final String path = item.getUri().getPath();\n");
-        builder.append(INDENT_2).append("final byte[] data = item.getData();\n\n");
+        builder.append(INDENT_2).append("final byte[] data = item.getData();\n");
+        builder.append(INDENT_2).append("final String node = item.getUri().getScheme();\n\n");
+
         writeDataBindings(builder, dataRoutes);
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");

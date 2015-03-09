@@ -51,7 +51,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @ReceiveMessages("/value_change")
-    void onValueChange(final String changeDescription) {
+    void onValueChange(final String changeDescription, final String nodeId) {
         changeTextView.setText(changeDescription);
     }
 
