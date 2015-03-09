@@ -31,9 +31,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     }
 
     @ReceiveData("/value")
-    void onNewValue(final int value) {
-        this.value = value;
-        valueText.setText(Integer.toString(value));
+    void onNewValue(final Integer value) {
+        if(value==null) {
+            this.value = 0;
+            valueText.setText(Integer.toString(0));
+        } else {
+            this.value = value;
+            valueText.setText(Integer.toString(value));
+        }
     }
 
     @Override public void onClick(View v) {

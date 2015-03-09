@@ -23,6 +23,10 @@ public final class Packager {
     }
 
     public static byte[] pack(Serializable object) {
+        if(object==null) {
+            return new byte[0];
+        }
+
         try {
             final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             final ObjectOutputStream out = new ObjectOutputStream(bytes);
@@ -30,19 +34,23 @@ public final class Packager {
 
             return bytes.toByteArray();
         }catch (IOException e){
-            throw new IllegalArgumentException("Unable to serialize object");
+            throw new IllegalArgumentException("Unable to serialize object", e);
         }
     }
 
     @SuppressWarnings("unchecked")
     public static <T> T unpack(byte[] data) {
+        if(data==null || data.length==0) {
+            return null;
+        }
+
         try {
             final ByteArrayInputStream bytes = new ByteArrayInputStream(data);
             final ObjectInputStream in = new ObjectInputStream(bytes);
 
             return (T)in.readObject();
         }catch (Exception e){
-            throw new IllegalArgumentException("Unable to deserialize object");
+            throw new IllegalArgumentException("Unable to deserialize object", e);
         }
     }
 

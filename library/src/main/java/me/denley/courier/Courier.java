@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -64,6 +65,25 @@ public final class Courier {
             @Override public void run(GoogleApiClient apiClient) {
                 final byte[] bytes = Packager.pack(data);
                 Wearable.MessageApi.sendMessage(apiClient, destinationNodeId, path, bytes);
+            }
+        });
+    }
+
+    public static void deleteData(final Context context, final String path) {
+        deleteData(context, path, null);
+    }
+
+    public static void deleteData(final Context context, final String path, final String nodeId) {
+        makeWearableApiCall(context, new WearableApiTask(){
+            @Override public void run(GoogleApiClient apiClient) {
+                final Uri.Builder uri = new Uri.Builder();
+                uri.scheme("wear");
+                uri.encodedPath(path);
+                if(nodeId!=null) {
+                    uri.encodedAuthority(nodeId);
+                }
+
+                Wearable.DataApi.deleteDataItems(apiClient, uri.build());
             }
         });
     }
