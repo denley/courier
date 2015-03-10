@@ -50,7 +50,7 @@ public final class Courier {
     public static void deliverMessage(final Context context, final String path, final Object data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
-                final byte[] bytes = Packager.pack(data);
+                final byte[] bytes = Packager.packBytes(data);
 
                 final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient).await().getNodes();
                 for (Node node : nodes) {
@@ -63,7 +63,7 @@ public final class Courier {
     public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Object data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
-                final byte[] bytes = Packager.pack(data);
+                final byte[] bytes = Packager.packBytes(data);
                 Wearable.MessageApi.sendMessage(apiClient, destinationNodeId, path, bytes);
             }
         });

@@ -238,7 +238,7 @@ public class PostalArea {
         builder.append(INDENT_2).append("final String path = message.getPath();\n");
         builder.append(INDENT_2).append("final byte[] data = message.getData();\n");
         builder.append(INDENT_2).append("final String node = message.getSourceNodeId();\n\n");
-        writeDataBindings(builder, messageRoutes);
+        writeDataBindings(builder, messageRoutes, "data");
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");
     }
@@ -314,7 +314,7 @@ public class PostalArea {
         builder.append(INDENT_2).append("final byte[] data = item.getData();\n");
         builder.append(INDENT_2).append("final String node = item.getUri().getHost();\n\n");
 
-        writeDataBindings(builder, dataRoutes);
+        writeDataBindings(builder, dataRoutes, "item");
         builder.append("\n");
         builder.append(INDENT).append("}\n\n");
     }
@@ -329,7 +329,7 @@ public class PostalArea {
         builder.append(INDENT).append("}\n\n");
     }
 
-    private void writeDataBindings (StringBuilder builder, Map<String, Route> routes) {
+    private void writeDataBindings (StringBuilder builder, Map<String, Route> routes, String dataVariable) {
         builder.append(INDENT_2);
 
         boolean startedIfBlock = false;
@@ -339,7 +339,7 @@ public class PostalArea {
             }
             startedIfBlock = true;
 
-            entry.getValue().writeTo(builder, INDENT_2);
+            entry.getValue().writeTo(builder, INDENT_2, dataVariable);
         }
     }
 

@@ -171,7 +171,10 @@ public class DataMapProcessor extends AbstractProcessor {
     }
 
     private void writePackImplMethod(StringBuilder builder, TypeElement element, String parentClass) {
-        builder.append(INDENT).append("protected void pack(T target, DataMap map) {\n");
+        if(parentClass!=null) {
+            builder.append(INDENT).append("@Override\n");
+        }
+        builder.append(INDENT).append("public void pack(T target, DataMap map) {\n");
         if(parentClass!=null) {
             builder.append(INDENT_2).append("super.pack(target, map);\n");
         }
@@ -195,6 +198,9 @@ public class DataMapProcessor extends AbstractProcessor {
     }
 
     private void writeUnpackImplMethod(StringBuilder builder, TypeElement element, String parentClass) {
+        if(parentClass!=null) {
+            builder.append(INDENT).append("@Override\n");
+        }
         builder.append(INDENT).append("protected void unpack(DataMap map, T target) {\n");
         if(parentClass!=null) {
             builder.append(INDENT_2).append("super.unpack(map, target);\n");

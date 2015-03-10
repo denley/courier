@@ -1,10 +1,9 @@
 package me.denley.courier;
 
-import android.util.Log;
-
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 
 import java.io.ByteArrayInputStream;
@@ -23,14 +22,37 @@ public final class Packager {
     private static final Map<Class, DataPackager> PACKAGERS = new LinkedHashMap<>();
 
     public interface DataPackager<T> {
-        public com.google.android.gms.wearable.DataMap pack(T target);
-        public T unpack(com.google.android.gms.wearable.DataMap map);
+        public DataMap pack(T target);
+        public void pack(T target, DataMap map);
+        public T unpack(DataMap map);
     }
 
+    @SuppressWarnings("unchecked")
     public static PutDataRequest pack(String path, Object data) {
-        final PutDataRequest request = PutDataRequest.create(path);
-        request.setData(pack(data));
-        return request;
+        try {
+            final PutDataMapRequest request = PutDataMapRequest.create(path);
+            final DataPackager packager = getDataPackager(data.getClass());
+            packager.pack(data, request.getDataMap());
+            return request.asPutDataRequest();
+        } catch (Exception e) {
+            final PutDataRequest request = PutDataRequest.create(path);
+            request.setData(packSerializable((Serializable)data));
+            return request;
+        }
+    }
+
+    public static byte[] packBytes(Object deliverable) {
+        try {
+            return pack(deliverable).toByteArray();
+        } catch (Exception e) {
+            return packSerializable((Serializable) deliverable);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static DataMap pack(Object deliverable) {
+        final DataPackager packager = getDataPackager(deliverable.getClass());
+        return packager.pack(deliverable);
     }
 
     public static byte[] packSerializable(Serializable object) {
@@ -46,16 +68,6 @@ public final class Packager {
             return bytes.toByteArray();
         }catch (IOException e){
             throw new IllegalArgumentException("Unable to serialize object", e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static byte[] pack(Object deliverable) {
-        try {
-            final DataPackager packager = getDataPackager(deliverable.getClass());
-            return packager.pack(deliverable).toByteArray();
-        } catch (Exception e) {
-            return packSerializable((Serializable)deliverable);
         }
     }
 
@@ -76,6 +88,7 @@ public final class Packager {
         }
     }
 
+    @SuppressWarnings("unused") // Used by generated classes
     public static <T> T unpack(DataItem data, Class<T> targetClass) {
         try {
             final DataMapItem dataMapItem = DataMapItem.fromDataItem(data);
@@ -85,6 +98,7 @@ public final class Packager {
         }
     }
 
+    @SuppressWarnings("unused") // Used by generated classes
     public static <T> T unpack(byte[] data, Class<T> targetClass) {
         try {
             final DataMap dataMap = DataMap.fromByteArray(data);
@@ -113,7 +127,6 @@ public final class Packager {
             PACKAGERS.put(targetClass, packager);
             return packager;
         }catch (Exception e) {
-            Log.e("Packager", "Couldn't find packager for target class. Missing @Deliverable annotation?");
             return null;
         }
     }

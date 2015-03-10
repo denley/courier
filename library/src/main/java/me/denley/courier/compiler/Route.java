@@ -12,14 +12,15 @@ public class Route {
         this.path = path;
     }
 
-    public void writeTo(StringBuilder builder, String indent) {
+    public void writeTo(StringBuilder builder, String indent, String dataVariable) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
 
         for(String type:getTargetTypes()) {
             final String name = "as_"+type.replace(".", "_");
             builder.append(indent).append(PostalArea.INDENT).append("final ")
                     .append(type).append(" ").append(name)
-                    .append(" = Packager.unpack(data, ")
+                    .append(" = Packager.unpack(")
+                    .append(dataVariable).append(", ")
                     .append(type).append(".class")
                     .append(");\n\n");
         }
