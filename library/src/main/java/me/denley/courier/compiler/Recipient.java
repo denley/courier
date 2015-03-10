@@ -1,27 +1,44 @@
 package me.denley.courier.compiler;
 
+import java.util.Set;
+
 import javax.lang.model.element.ElementKind;
 
 public class Recipient {
+
+    public static boolean hasMainThreadReceipient(Set<Recipient> recipients) {
+        for(Recipient r:recipients) {
+            if(!r.backgroundThread) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     public final String recipientName;
     public final String payloadType;
 
     public final ElementKind deliveryType;
-    public boolean hasNodeParameter = false;
+    public final boolean hasNodeParameter;
+    public final boolean backgroundThread;
 
 
-    public Recipient(String name, ElementKind type, String payload) {
+    public Recipient(String name, String payload) {
         this.recipientName = name;
-        this.deliveryType = type;
+        this.deliveryType = ElementKind.FIELD;
         this.payloadType = payload;
+        this.backgroundThread = true;
+        this.hasNodeParameter = false;
     }
 
-    public Recipient(String name, ElementKind type, String payload, boolean hasNodeParameter) {
+    public Recipient(String name, String payload, boolean hasNodeParameter, boolean backgroundThread) {
         this.recipientName = name;
-        this.deliveryType = type;
+        this.deliveryType = ElementKind.METHOD;
         this.payloadType = payload;
         this.hasNodeParameter = hasNodeParameter;
+        this.backgroundThread = backgroundThread;
     }
 
     public void writeDataBindingTo(StringBuilder builder) {

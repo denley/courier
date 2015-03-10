@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0 - Unreleased
+### Added
+- `@BackgroundThread` method annotation, to have method callbacks occur on a background thread.
+
 ## 0.4.1 - 2015-03-09
 ### Added
 - `Courier.deleteData` method to delete items from the `DataApi`

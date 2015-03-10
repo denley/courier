@@ -15,17 +15,28 @@ public class Route {
     public void writeTo(StringBuilder builder, String indent) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
         builder.append(indent).append(PostalArea.INDENT)
-                .append("final Object unpacked = Packager.unpack(data);\n");
-        builder.append(indent).append(PostalArea.INDENT).append("handler.post(new Runnable() {\n");
-        builder.append(indent).append(PostalArea.INDENT_2).append("public void run() {\n");
+                .append("final Object unpacked = Packager.unpack(data);\n\n");
 
         for(Recipient recipient:recipients) {
-            builder.append(indent).append(PostalArea.INDENT_3);
-            recipient.writeDataBindingTo(builder);
+            if(recipient.backgroundThread) {
+                builder.append(indent).append(PostalArea.INDENT);
+                recipient.writeDataBindingTo(builder);
+            }
         }
 
-        builder.append(indent).append(PostalArea.INDENT_2).append("}\n");
-        builder.append(indent).append(PostalArea.INDENT).append("});\n");
+        if(Recipient.hasMainThreadReceipient(recipients)) {
+            builder.append(indent).append(PostalArea.INDENT).append("handler.post(new Runnable() {\n");
+            builder.append(indent).append(PostalArea.INDENT_2).append("public void run() {\n");
+            for (Recipient recipient : recipients) {
+                if (!recipient.backgroundThread) {
+                    builder.append(indent).append(PostalArea.INDENT_3);
+                    recipient.writeDataBindingTo(builder);
+                }
+            }
+            builder.append(indent).append(PostalArea.INDENT_2).append("}\n");
+            builder.append(indent).append(PostalArea.INDENT).append("});\n");
+        }
+
         builder.append(indent).append("}");
     }
 

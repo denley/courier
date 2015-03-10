@@ -177,14 +177,27 @@ public class PostalArea {
         builder.append(INDENT).append("private void initLocalNodes(final T target) {\n");
         builder.append(INDENT_2).append("final Node localNode = Wearable.NodeApi.getLocalNode(apiClient)\n");
         builder.append(INDENT_4).append(".await().getNode();\n\n");
-        builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
-        builder.append(INDENT_3).append("public void run() {\n");
+
         for(Recipient localNodeRecipient:localNodeRecipients) {
-            builder.append(INDENT_4);
-            localNodeRecipient.writeLocalNodeBindingTo(builder);
+            if(localNodeRecipient.backgroundThread) {
+                builder.append(INDENT_2);
+                localNodeRecipient.writeLocalNodeBindingTo(builder);
+            }
         }
-        builder.append(INDENT_3).append("}\n");
-        builder.append(INDENT_2).append("});\n");
+
+        if(Recipient.hasMainThreadReceipient(localNodeRecipients)) {
+            builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
+            builder.append(INDENT_3).append("public void run() {\n");
+            for (Recipient localNodeRecipient : localNodeRecipients) {
+                if (!localNodeRecipient.backgroundThread) {
+                    builder.append(INDENT_4);
+                    localNodeRecipient.writeLocalNodeBindingTo(builder);
+                }
+            }
+            builder.append(INDENT_3).append("}\n");
+            builder.append(INDENT_2).append("});\n");
+        }
+
         builder.append(INDENT).append("}\n\n");
     }
 
@@ -238,14 +251,27 @@ public class PostalArea {
 
         builder.append(INDENT_2).append("final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient)\n");
         builder.append(INDENT_4).append(".await().getNodes();\n\n");
-        builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
-        builder.append(INDENT_3).append("public void run() {\n");
+
         for(Recipient localNodeRecipient:remoteNodeRecipients) {
-            builder.append(INDENT_4);
-            localNodeRecipient.writeRemoteNodeBindingTo(builder);
+            if(localNodeRecipient.backgroundThread) {
+                builder.append(INDENT_2);
+                localNodeRecipient.writeRemoteNodeBindingTo(builder);
+            }
         }
-        builder.append(INDENT_3).append("}\n");
-        builder.append(INDENT_2).append("});\n");
+
+        if(Recipient.hasMainThreadReceipient(remoteNodeRecipients)) {
+            builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
+            builder.append(INDENT_3).append("public void run() {\n");
+            for (Recipient localNodeRecipient : remoteNodeRecipients) {
+                if (!localNodeRecipient.backgroundThread) {
+                    builder.append(INDENT_4);
+                    localNodeRecipient.writeRemoteNodeBindingTo(builder);
+                }
+            }
+            builder.append(INDENT_3).append("}\n");
+            builder.append(INDENT_2).append("});\n");
+        }
+
         builder.append(INDENT).append("}\n\n");
     }
 

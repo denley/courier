@@ -20,6 +20,7 @@ import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
+import me.denley.courier.BackgroundThread;
 import me.denley.courier.Courier;
 import me.denley.courier.LocalNode;
 import me.denley.courier.ReceiveData;
@@ -56,11 +57,14 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         set.add(ReceiveMessages.class.getName());
         set.add(LocalNode.class.getName());
         set.add(RemoteNodes.class.getName());
+        set.add(BackgroundThread.class.getName());
         return set;
     }
 
     @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         postalAreaMap = new LinkedHashMap<>();
+        verifyBackgroundThreadAnnotations(roundEnv);
+
         processReceiveDataAnnotations(roundEnv);
         processReceiveMessagesAnnotations(roundEnv);
         processLocalNodeAnnotations(roundEnv);
@@ -168,16 +172,44 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         if(element.getKind().isField()) {
             final String name = element.getSimpleName().toString();
             final String payload = element.asType().toString();
-            return new Recipient(name, ElementKind.FIELD, payload);
+            return new Recipient(name, payload);
         } else {
             final ExecutableElement executableElement = (ExecutableElement) element;
             final List<? extends VariableElement> params = executableElement.getParameters();
             final String name = element.getSimpleName().toString();
             final String payload = params.get(0).asType().toString();
-            return new Recipient(name, ElementKind.METHOD, payload, params.size()>1);
+
+            final boolean backgroundThread = element.getAnnotationsByType(BackgroundThread.class).length>0;
+
+            return new Recipient(name, payload, params.size()>1, backgroundThread);
         }
     }
 
+    private void verifyBackgroundThreadAnnotations(RoundEnvironment roundEnv) {
+        for(Element element:roundEnv.getElementsAnnotatedWith(BackgroundThread.class)) {
+            verifyBackgroundThreadElementOrFail(element);
+        }
+    }
+
+    private void verifyBackgroundThreadElementOrFail(Element element) {
+        try {
+            verifyBackgroundThreadElement(element);
+        } catch(IllegalArgumentException e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element);
+        }
+    }
+
+    private void verifyBackgroundThreadElement(Element element) {
+        if(element.getKind()!=ElementKind.METHOD) {
+            throw new IllegalArgumentException("@BackgroundThread may only be used on methods");
+        } else if (element.getAnnotationsByType(ReceiveData.class).length==0
+                && element.getAnnotationsByType(ReceiveMessages.class).length==0
+                && element.getAnnotationsByType(RemoteNodes.class).length==0
+                && element.getAnnotationsByType(LocalNode.class).length==0
+                ) {
+            throw new IllegalArgumentException("@BackgroundThread must be used with @ReceiveData, @ReceiveMessages, @RemoteNodes, or @LocalNode");
+        }
+    }
 
     private void writeClasses() {
         for(TypeElement element : postalAreaMap.keySet()) {
