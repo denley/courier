@@ -1,28 +1,19 @@
 package me.denley.courier.sample;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.wearable.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import me.denley.courier.Courier;
-import me.denley.courier.LocalNode;
 import me.denley.courier.ReceiveData;
 import me.denley.courier.ReceiveMessages;
 import me.denley.courier.RemoteNodes;
 
-public class MainActivity extends Activity implements View.OnClickListener {
-
-    @LocalNode
-    Node localNode;
-
-    @RemoteNodes
-    List<Node> remoteNodes = new ArrayList<Node>();
+public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     TextView changeTextView, valueTextView, nodesTextView;
     View rootView;
@@ -38,11 +29,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         rootView.setOnClickListener(this);
 
         Courier.startReceiving(this);
-    }
-
-    @Override protected void onDestroy() {
-        super.onDestroy();
-        Courier.stopReceiving(this);
     }
 
     @RemoteNodes

@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `@BackgroundThread` method annotation, to have method callbacks occur on a background thread.
 
+### Fixed
+- A target's parent class' annotations are no longer ignored
+
 ## 0.4.1 - 2015-03-09
 ### Added
 - `Courier.deleteData` method to delete items from the `DataApi`

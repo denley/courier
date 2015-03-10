@@ -17,6 +17,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
@@ -30,6 +33,7 @@ import me.denley.courier.RemoteNodes;
 public class Processor extends javax.annotation.processing.AbstractProcessor {
 
     private Map<TypeElement, PostalArea> postalAreaMap = new LinkedHashMap<>();
+    Set<String> targetClassNames = new LinkedHashSet<>();
 
     private PostalArea getPostalArea(TypeElement enclosingElement) {
         PostalArea area = postalAreaMap.get(enclosingElement);
@@ -47,6 +51,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
 
             area = new PostalArea(packageName, targetClassName);
             postalAreaMap.put(enclosingElement, area);
+            targetClassNames.add(enclosingElement.toString());
         }
         return area;
     }
@@ -69,6 +74,9 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         processReceiveMessagesAnnotations(roundEnv);
         processLocalNodeAnnotations(roundEnv);
         processRemotelNodeAnnotations(roundEnv);
+
+        processParents();
+
         writeClasses();
         return true;
     }
@@ -211,6 +219,40 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         }
     }
 
+    private void processParents() {
+        // Try to find a parent injector for each injector.
+        for (Map.Entry<TypeElement, PostalArea> entry : postalAreaMap.entrySet()) {
+            String parentClassFqcn = findParentFqcn(entry.getKey());
+            if (parentClassFqcn != null) {
+                entry.getValue().setParent(parentClassFqcn + Courier.CLASS_SUFFIX);
+            }
+        }
+    }
+
+    private String findParentFqcn(TypeElement typeElement) {
+        TypeMirror type;
+        while (true) {
+            type = typeElement.getSuperclass();
+            if (type.getKind() == TypeKind.NONE) {
+                return null;
+            }
+            typeElement = (TypeElement) ((DeclaredType) type).asElement();
+            if (targetClassNames.contains(typeElement.toString())) {
+                final String packageName = processingEnv
+                        .getElementUtils()
+                        .getPackageOf(typeElement)
+                        .getQualifiedName()
+                        .toString();
+                final String targetClassName = typeElement
+                        .getQualifiedName()
+                        .toString()
+                        .substring(packageName.length() + 1)
+                        .replace('.', '$');
+                return packageName + "." + targetClassName;
+            }
+        }
+    }
+
     private void writeClasses() {
         for(TypeElement element : postalAreaMap.keySet()) {
             final PostalArea area = postalAreaMap.get(element);
@@ -228,6 +270,5 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
             }
         }
     }
-
 
 }

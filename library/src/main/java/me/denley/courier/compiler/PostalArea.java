@@ -19,6 +19,7 @@ public class PostalArea {
 
     private final String packageName;
     private final String targetClassName;
+    private String parentClass = null;
 
     public PostalArea(String packageName, String targetClassName) {
         this.packageName = packageName;
@@ -45,6 +46,10 @@ public class PostalArea {
             (isData?dataRoutes:messageRoutes).put(path, route);
         }
         return route;
+    }
+
+    public void setParent(String parentClass) {
+        this.parentClass = parentClass;
     }
 
     public String getTargetClassName() {
@@ -85,14 +90,19 @@ public class PostalArea {
     }
 
     private void writeClassDef(StringBuilder builder) {
-        builder.append("public class ")
-                .append(targetClassName)
-                .append(Courier.CLASS_SUFFIX)
-                .append(" <T extends ")
-                .append(targetClassName)
-                .append("> implements Courier.DeliveryBoy<T> {\n");
-        builder.append(INDENT).append("GoogleApiClient apiClient = null;\n");
-        builder.append(INDENT).append("Handler handler = new Handler(Looper.getMainLooper());\n\n");
+        builder.append("public class ").append(targetClassName).append(Courier.CLASS_SUFFIX)
+                .append("<T extends ").append(targetClassName).append(">");
+
+        if(parentClass==null) {
+            builder.append(" implements Courier.DeliveryBoy<T>");
+        } else {
+            builder.append(" extends ").append(parentClass).append("<T>");
+        }
+
+        builder.append(" {\n");
+
+        builder.append(INDENT).append("private GoogleApiClient apiClient = null;\n");
+        builder.append(INDENT).append("private Handler handler = new Handler(Looper.getMainLooper());\n\n");
 
         writeListenerMaps(builder);
         writeStartReceivingMethod(builder);
@@ -118,19 +128,23 @@ public class PostalArea {
 
     private void writeListenerMaps(StringBuilder builder) {
         if(!messageRoutes.isEmpty()) {
-            builder.append(INDENT).append("Map<T, MessageApi.MessageListener> messageListeners = new LinkedHashMap<T, MessageApi.MessageListener>();\n");
+            builder.append(INDENT).append("private Map<T, MessageApi.MessageListener> messageListeners = new LinkedHashMap<T, MessageApi.MessageListener>();\n");
         }
         if(!dataRoutes.isEmpty()) {
-            builder.append(INDENT).append("Map<T, DataApi.DataListener> dataListeners = new LinkedHashMap<T, DataApi.DataListener>();\n");
+            builder.append(INDENT).append("private Map<T, DataApi.DataListener> dataListeners = new LinkedHashMap<T, DataApi.DataListener>();\n");
         }
         if(!remoteNodeRecipients.isEmpty() || !dataRoutes.isEmpty()) {
-            builder.append(INDENT).append("Map<T, NodeApi.NodeListener> nodeListeners = new LinkedHashMap<T, NodeApi.NodeListener>();\n");
+            builder.append(INDENT).append("private Map<T, NodeApi.NodeListener> nodeListeners = new LinkedHashMap<T, NodeApi.NodeListener>();\n");
         }
         builder.append("\n");
     }
 
     private void writeStartReceivingMethod(StringBuilder builder) {
         builder.append(INDENT).append("public void startReceiving(final GoogleApiClient apiClient, final T target) {\n");
+        if(parentClass!=null) {
+            builder.append(INDENT_2).append("super.startReceiving(apiClient, target);\n");
+        }
+
         builder.append(INDENT_2).append("this.apiClient = apiClient;\n");
         if(!localNodeRecipients.isEmpty()) {
             builder.append(INDENT_2).append("initLocalNodes(target);\n");
@@ -149,9 +163,13 @@ public class PostalArea {
 
     private void writeStopReceivingMethod(StringBuilder builder) {
         builder.append(INDENT).append("public void stopReceiving(T target) {\n");
+        if(parentClass!=null) {
+            builder.append(INDENT_2).append("super.stopReceiving(target);\n");
+        }
         builder.append(INDENT_2).append("if(apiClient==null) {\n");
         builder.append(INDENT_3).append("return;\n");
         builder.append(INDENT_2).append("}\n\n");
+
         if(!messageRoutes.isEmpty()) {
             builder.append(INDENT_2).append("MessageApi.MessageListener ml = messageListeners.remove(target);\n");
             builder.append(INDENT_2).append("if(ml!=null) {\n");
