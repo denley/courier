@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.5.0 - Unreleased
 ### Added
 - `@BackgroundThread` method annotation, to have method callbacks occur on a background thread.
-- `@DataMap` annotation, to create a serializable class
+- `@Deliverable` annotation, to create a serializable class
 
 ### Fixed
 - A target's parent class' annotations are no longer ignored
