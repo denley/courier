@@ -42,7 +42,8 @@ public class Recipient {
     }
 
     public void writeDataBindingTo(StringBuilder builder) {
-        writeBindingTo(builder, "("+payloadType+")unpacked");
+        final String name = "as_"+payloadType.replace(".", "_");
+        writeBindingTo(builder, name);
     }
 
     public void writeLocalNodeBindingTo(StringBuilder builder) {

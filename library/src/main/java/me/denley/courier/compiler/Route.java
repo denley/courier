@@ -14,8 +14,15 @@ public class Route {
 
     public void writeTo(StringBuilder builder, String indent) {
         builder.append("if (path.equals(\"").append(path).append("\")) {\n");
-        builder.append(indent).append(PostalArea.INDENT)
-                .append("final Object unpacked = Packager.unpack(data);\n\n");
+
+        for(String type:getTargetTypes()) {
+            final String name = "as_"+type.replace(".", "_");
+            builder.append(indent).append(PostalArea.INDENT).append("final ")
+                    .append(type).append(" ").append(name)
+                    .append(" = Packager.unpack(data, ")
+                    .append(type).append(".class")
+                    .append(");\n\n");
+        }
 
         for(Recipient recipient:recipients) {
             if(recipient.backgroundThread) {
@@ -38,6 +45,16 @@ public class Route {
         }
 
         builder.append(indent).append("}");
+    }
+
+    private Set<String> getTargetTypes() {
+        final Set<String> types = new LinkedHashSet<>();
+        for(Recipient recipient:recipients) {
+            if(!types.contains(recipient.payloadType)) {
+                types.add(recipient.payloadType);
+            }
+        }
+        return types;
     }
 
 }

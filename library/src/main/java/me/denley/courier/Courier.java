@@ -17,7 +17,6 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ public final class Courier {
     }
 
 
-    public static void deliverData(final Context context, final String path, final Serializable data) {
+    public static void deliverData(final Context context, final String path, final Object data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
                 final PutDataRequest request = Packager.pack(path, data);
@@ -48,7 +47,7 @@ public final class Courier {
         });
     }
 
-    public static void deliverMessage(final Context context, final String path, final Serializable data) {
+    public static void deliverMessage(final Context context, final String path, final Object data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
                 final byte[] bytes = Packager.pack(data);
@@ -61,7 +60,7 @@ public final class Courier {
         });
     }
 
-    public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Serializable data) {
+    public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Object data) {
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
                 final byte[] bytes = Packager.pack(data);
