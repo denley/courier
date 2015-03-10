@@ -66,24 +66,53 @@ Node localNode;
 
 Alternatively, you can retrieve the local node by calling `Courier.getLocalNode(context)`. This must be done on a background thread.
 
+### Threading
+
+By default, method calls will be made on the main thread. If you want a callback to be made on a background thread, you can use the `@BackgroundThread` annotation on a method, like so:
+
+```java
+@BackgroundThread
+@ReceiveMessages("/incoming_sms")
+void onSmsReceived(SmsDescriptor smsMessage) {
+    // ...
+}
+```
+
+### Object Serialization
+
+To be delivered between devices, objects must be serialized into a byte array. This can be done in two ways:
+
+1. Annotate your class with the `@Deliverable` interface. This will generate a utility class that will convert your object into a `DataMap` (and back again).
+2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class`s structure in the future. As such, it is not recommended.
+
+Example:
+
+```java
+@Deliverable
+public class SmsDescriptor {
+
+    String sender;
+    String messageText;
+    long timestamp;
+
+}
+```
 
 Build Configuration
 -------
 
 Using the jcenter repository, add the following line to the gradle dependencies for your module.
 ```groovy
-compile 'me.denley.courier:courier:0.4.1'
+compile 'me.denley.courier:courier:0.5.0'
 ```
 
 Details
 -------
 
-- All callbacks are made on the main thread.
-- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving`, but asynchronously.
-- `@DeliverData` callbacks will also be called immediately when the device connects to another device.
+- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving` (but asynchronously).
+- `@DeliverData` callbacks will also be called immediately when the device connects to a device.
 - `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi` (they are missed if the device is disconnected).
-- Transferred objects are serialized in a raw form (objects must implement java's ``Serializable` interface). This is high priority issue as it limits forward compatibility. It will be addressed before the first stable release.
-- If an empty message is sent or if a data item is removed, a `null` object will be passed to the listener. Be sure to check for `null` values.
+- If an empty message is sent or if a data item is removed, a `null` object will be passed to the listener. Be sure to check for `null` values!
 
 License
 -------
