@@ -109,7 +109,7 @@ public final class Courier {
     }
 
     public static <T> void startReceiving(final Context context, final T target) {
-        final DeliveryBoy<T> messenger = findDeliveryBoy(target);
+        final DeliveryBoy<T> messenger = findDeliveryBoy(target.getClass());
 
         makeWearableApiCall(context, new WearableApiTask() {
             @Override public void run(GoogleApiClient apiClient) {
@@ -119,7 +119,7 @@ public final class Courier {
     }
 
     public static <T> void stopReceiving(final T target) {
-        final DeliveryBoy<T> messenger = findDeliveryBoy(target);
+        final DeliveryBoy<T> messenger = findDeliveryBoy(target.getClass());
         messenger.stopReceiving(target);
     }
 
@@ -166,9 +166,7 @@ public final class Courier {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> DeliveryBoy<T> findDeliveryBoy(T target) {
-        final Class targetClass = target.getClass();
-
+    private static <T> DeliveryBoy<T> findDeliveryBoy(Class targetClass) {
         DeliveryBoy<T> messenger = DELIVERY_STAFF.get(targetClass);
         if(messenger!=null) {
             return messenger;
@@ -179,7 +177,12 @@ public final class Courier {
             final Class messengerClass = Class.forName(messengerClassName);
             messenger = (DeliveryBoy<T>)messengerClass.newInstance();
         }catch (Exception e) {
-            throw new IllegalStateException("Courier not found for "+targetClass.getName()+". Missing annotations?");
+            Class superClass = targetClass.getSuperclass();
+            if(superClass==Object.class) {
+                throw new IllegalStateException("Courier not found for "+targetClass.getName()+". Missing annotations?");
+            } else {
+                messenger = findDeliveryBoy(superClass);
+            }
         }
 
         DELIVERY_STAFF.put(targetClass, messenger);
