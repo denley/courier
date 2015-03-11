@@ -24,7 +24,9 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public final class Courier {
 
+    /** For use by generated code. Don't use this. */
     public static final String CLASS_SUFFIX = "$$Delivery";
+
     private static final Map<Class, DeliveryBoy> DELIVERY_STAFF = new LinkedHashMap<>();
 
     /** For use by generated code. Don't use this. */

@@ -2,7 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.5.0 - Unreleased
+## 0.5.1 - Unreleased
+### Fixed
+- Retention of annotations set to `Class` so that ProGuard can see them
+
+## 0.5.0 - 2015-03-10
 ### Added
 - `@BackgroundThread` method annotation, to have method callbacks occur on a background thread.
 - `@Deliverable` annotation, to create a serializable class

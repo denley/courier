@@ -15,3 +15,13 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keep class me.denley.courier.** { *; }
+-dontwarn me.denley.courier.compiler.**
+-keep class **$$Delivery { *; }
+-keepclasseswithmembernames class * {
+    @me.denley.courier.* <fields>;
+}
+-keepclasseswithmembernames class * {
+    @me.denley.courier.* <methods>;
+}
