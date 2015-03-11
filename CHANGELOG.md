@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.5.1 - Unreleased
+## 0.5.1 - 2015-03-11
 ### Fixed
 - Retention of annotations set to `Class` so that ProGuard can see them
 - Inheritance support bug
