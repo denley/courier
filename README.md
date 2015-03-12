@@ -98,6 +98,9 @@ public class SmsDescriptor {
 }
 ```
 
+This `DataMap` serialization process supports arbitrary object types as fields, as long as the object's class is also annotated with `@Deliverable` or implements `Serializable`.
+`Asset`s can also be included as fields. Though this can only be used with the DataApi (not the MessageApi). For convenience, `Asset`s can be opened using the `Courier.getAssetInputStream` method.
+
 Build Configuration
 -------
 
