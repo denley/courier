@@ -3,7 +3,7 @@ package me.denley.courier.compiler;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Route {
+class Route {
 
     public final String path;
     public final Set<Recipient> recipients = new LinkedHashSet<>();

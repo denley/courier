@@ -2,7 +2,7 @@ package me.denley.courier.compiler;
 
 import javax.lang.model.element.Element;
 
-public enum DataMapElementType {
+enum DataMapElementType {
     ASSET(new String[]{"com.google.android.gms.wearable.Asset"}, "putAsset", "getAsset"),
     BOOLEAN(new String[]{"boolean", "java.lang.Boolean"}, "putBoolean", "getBoolean"),
     BYTE(new String[]{"byte", "java.lang.Byte"}, "putByte", "getByte"),

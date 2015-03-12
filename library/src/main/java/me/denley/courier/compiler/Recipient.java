@@ -4,7 +4,7 @@ import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
 
-public class Recipient {
+class Recipient {
 
     public static boolean hasMainThreadReceipient(Set<Recipient> recipients) {
         for(Recipient r:recipients) {

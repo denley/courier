@@ -7,7 +7,7 @@ import java.util.Set;
 
 import me.denley.courier.Courier;
 
-public class PostalArea {
+class PostalArea {
 
     public static final String INDENT = "    ";
     public static final String INDENT_2 = "        ";
