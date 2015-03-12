@@ -13,10 +13,12 @@ import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +105,23 @@ public final class Courier {
 
         if(result.isSuccess()) {
             return Wearable.NodeApi.getLocalNode(apiClient).await().getNode();
+        } else {
+            return null;
+        }
+    }
+
+    public static InputStream getAssetInputStream(final Context context, final Asset asset) {
+        if(Looper.myLooper()==Looper.getMainLooper()) {
+            throw new IllegalStateException("getLocalNode can not be called from the UI thread");
+        }
+
+        final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
+                .addApi(Wearable.API)
+                .build();
+
+        final ConnectionResult result = apiClient.blockingConnect();
+        if(result.isSuccess()) {
+            return Wearable.DataApi.getFdForAsset(apiClient, asset).await().getInputStream();
         } else {
             return null;
         }
