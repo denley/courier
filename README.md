@@ -106,6 +106,22 @@ Using the jcenter repository, add the following line to the gradle dependencies 
 compile 'me.denley.courier:courier:0.5.1'
 ```
 
+If you use ProGuard, you will need to add the following lines to your configuration. You will probably need to add this to the configurations for both your handheld and wearable modules.
+
+```
+-keep class me.denley.courier.** { *; }
+-dontwarn me.denley.courier.compiler.**
+-keep class **$$Delivery { *; }
+-keep class **DataMapPackager { *; }
+-keepclasseswithmembernames class * {
+    @me.denley.courier.* <fields>;
+}
+-keepclasseswithmembernames class * {
+    @me.denley.courier.* <methods>;
+}
+-keep @me.denley.courier.* public class *
+```
+
 Details
 -------
 
