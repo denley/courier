@@ -10,7 +10,7 @@ import me.denley.courier.Deliverable;
 public class Song {
 
     public String title;
-    public String artist;
+    public Artist artist;
     public long length;
 
 

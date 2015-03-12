@@ -125,6 +125,7 @@ public class DataMapProcessor extends AbstractProcessor {
         final String parentClass = getParentClassName(element);
 
         builder.append("package ").append(getPackageName(element)).append(";\n\n");
+        builder.append("import me.denley.courier.Packager;\n");
         builder.append("import me.denley.courier.Packager.DataPackager;\n");
         builder.append("import com.google.android.gms.wearable.DataMap;\n\n");
         writeClassDef(builder, element, parentClass);
@@ -189,8 +190,18 @@ public class DataMapProcessor extends AbstractProcessor {
                     && !modifiers.contains(Modifier.FINAL)
                     ) {
 
-                builder.append(INDENT_2).append("map.").append(getPutMethodForElement(subElement))
-                        .append("(\"").append(name).append("\", target.").append(name).append(");\n");
+                final DataMapElementType elementType = DataMapElementType.getElementType(subElement);
+                if(elementType==null) {
+                    if(targetClassNames.contains(subElement.asType().toString())) {
+                        builder.append(INDENT_2).append("map.putDataMap(\"").append(name).append("\", ")
+                                .append("Packager.pack(target.").append(name).append("));\n");
+                    } else {
+                        throw new IllegalArgumentException("Field type ("+subElement.asType().toString()+") is not mappable to a DataMap.");
+                    }
+                } else {
+                    builder.append(INDENT_2).append("map.").append(elementType.putMethod)
+                            .append("(\"").append(name).append("\", target.").append(name).append(");\n");
+                }
             }
         }
 
@@ -216,103 +227,28 @@ public class DataMapProcessor extends AbstractProcessor {
                     && !modifiers.contains(Modifier.FINAL)
                     ) {
 
-                builder.append(INDENT_2).append("target.").append(name)
-                        .append(" = map.").append(getGetMethodForElement(subElement))
-                        .append("(\"").append(name).append("\");\n");
+                final DataMapElementType elementType = DataMapElementType.getElementType(subElement);
+                if(elementType==null) {
+                    if(targetClassNames.contains(subElement.asType().toString())) {
+                        builder.append(INDENT_2).append("target.").append(name).append(" = ");
+                        builder.append("Packager.unpack(")
+                                .append("map.getDataMap(\"").append(name)
+                                .append("\"), ")
+                                .append(subElement.asType().toString()).append(".class);\n");
+                    } else {
+                        throw new IllegalArgumentException("Field type ("+subElement.asType().toString()+") is not mappable to a DataMap.");
+                    }
+                } else {
+                    builder.append(INDENT_2).append("target.").append(name).append(" = ");
+                    builder.append("map.").append(elementType.getMethod)
+                            .append("(\"").append(name).append("\");\n");
+                }
             }
         }
 
         builder.append(INDENT).append("}\n\n");
     }
 
-    private String getPutMethodForElement(Element element) {
-        switch(element.asType().toString()){
-            case "com.google.android.gms.wearable.Asset":
-                return "putAsset";
-            case "boolean":
-            case "java.lang.Boolean":
-                return "putBoolean";
-            case "byte":
-            case "java.lang.Byte":
-                return "putByte";
-            case "byte[]":
-                return "putByteArray";
-            case "com.google.android.gms.wearable.DataMap":
-                return "putDataMap";
-            case "java.util.ArrayList<com.google.android.gms.wearable.DataMap>":
-                return "putDataMapArrayList";
-            case "double":
-            case "java.lang.Double":
-                return "putDouble";
-            case "float":
-            case "java.lang.Float":
-                return "putFloat";
-            case "float[]":
-                return "putFloatArray";
-            case "int":
-            case "java.lang.Integer":
-                return "putInt";
-            case "java.util.ArrayList<java.lang.Integer>":
-                return "putIntegerArrayList";
-            case "long":
-            case "java.lang.Long":
-                return "putLong";
-            case "long[]":
-                return "putLongArray";
-            case "java.lang.String":
-                return "putString";
-            case "java.lang.String[]":
-                return "putStringArray";
-            case "java.util.ArrayList<java.lang.String>":
-                return "putStringArrayList";
-            default:
-                throw new IllegalArgumentException("Field type ("+element.asType().toString()+") is not mappable to a DataMap.");
-        }
-    }
 
-    private String getGetMethodForElement(Element element) {
-        switch(element.asType().toString()){
-            case "com.google.android.gms.wearable.Asset":
-                return "getAsset";
-            case "boolean":
-            case "java.lang.Boolean":
-                return "getBoolean";
-            case "byte":
-            case "java.lang.Byte":
-                return "getByte";
-            case "byte[]":
-                return "getByteArray";
-            case "com.google.android.gms.wearable.DataMap":
-                return "getDataMap";
-            case "java.util.ArrayList<com.google.android.gms.wearable.DataMap>":
-                return "getDataMapArrayList";
-            case "double":
-            case "java.lang.Double":
-                return "getDouble";
-            case "float":
-            case "java.lang.Float":
-                return "getFloat";
-            case "float[]":
-                return "getFloatArray";
-            case "int":
-            case "java.lang.Integer":
-                return "getInt";
-            case "java.util.ArrayList<java.lang.Integer>":
-                return "getIntegerArrayList";
-            case "long":
-            case "java.lang.Long":
-                return "getLong";
-            case "long[]":
-                return "getLongArray";
-            case "java.lang.String":
-                return "getString";
-            case "java.lang.String[]":
-                return "getStringArray";
-            case "java.util.ArrayList<java.lang.String>":
-                return "getStringArrayList";
-            default:
-                throw new IllegalArgumentException("Field type (\"+element.asType().toString()+\") is not mappable to a DataMap.");
-        }
-    }
 
 }

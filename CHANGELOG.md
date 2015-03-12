@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `Courier.getAssetInputStream` convenience method
 
+### Fixed
+- Classes annotated with `@Deliverable` can now contain fields of other classes also annotated with `@Deliverable`
+
 ## 0.5.1 - 2015-03-11
 ### Fixed
 - Retention of annotations set to `Class` so that ProGuard can see them

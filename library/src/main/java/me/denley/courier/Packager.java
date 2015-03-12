@@ -51,6 +51,10 @@ public final class Packager {
 
     @SuppressWarnings("unchecked")
     public static DataMap pack(Object deliverable) {
+        if(deliverable==null) {
+            return null;
+        }
+
         final DataPackager packager = getDataPackager(deliverable.getClass());
         return packager.pack(deliverable);
     }
@@ -109,6 +113,10 @@ public final class Packager {
     }
 
     public static <T> T unpack(DataMap map, Class<T> targetClass) {
+        if(map==null) {
+            return null;
+        }
+
         final DataPackager<T> packager = getDataPackager(targetClass);
         return packager.unpack(map);
     }
