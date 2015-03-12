@@ -112,7 +112,7 @@ public final class Courier {
 
     public static InputStream getAssetInputStream(final Context context, final Asset asset) {
         if(Looper.myLooper()==Looper.getMainLooper()) {
-            throw new IllegalStateException("getLocalNode can not be called from the UI thread");
+            throw new IllegalStateException("getAssetInputStream can not be called from the UI thread");
         }
 
         final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
