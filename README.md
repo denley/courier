@@ -1,3 +1,5 @@
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Courier-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1644)
+
 # Courier
 A delivery service for Android Wear. Courier uses `Wearable.DataApi` and `Wearable.MessageApi` to deliver objects between devices simply and cleanly.
 
