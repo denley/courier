@@ -85,7 +85,7 @@ void onSmsReceived(SmsDescriptor smsMessage) {
 To be delivered between devices, objects must be serialized into a byte array. This can be done in two ways:
 
 1. Annotate your class with the `@Deliverable` interface. This will generate a utility class that will convert your object into a `DataMap` (and back again).
-2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class`s structure in the future. As such, it is not recommended.
+2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class`s structure in the future. As such, it is not recommended. However, this means that you can send raw primitives (or Strings, etc.) as messages or data using `Courier`.
 
 Example:
 
@@ -102,6 +102,38 @@ public class SmsDescriptor {
 
 This `DataMap` serialization process supports arbitrary object types as fields, as long as the object's class is also annotated with `@Deliverable` or implements `Serializable`.
 `Asset`s can also be included as fields. Though this can only be used with the DataApi (not the MessageApi). For convenience, `Asset`s can be opened using the `Courier.getAssetInputStream` method.
+
+### WearableListenerService
+
+Often you will want to listen for message and data events outside of your 'Activity' using a [WearableListenerService](https://developer.android.com/training/wearables/data-layer/events.html#Listen).
+
+`Courier` is completely compatible with `WearableListenerService`. In this class your code will look very similar with or without using `Courier`, but `Courier` can help you to unpack any messages/data that were sent using `Courier.deliverMessage` or `Courier.deliverData`.
+
+Example:
+
+```java
+@Override public void onMessageReceived(@NonNull MessageEvent messageEvent) {
+    if (messageEvent.getPath().equals("/incoming_sms")) {
+        SmsDescriptor mySms = Packager.unpack(messageEvent.getData(), SmsDescriptor.class);
+
+        // Do something with the message
+        // ...
+    }
+}
+
+@Override public void onDataChanged(DataEventBuffer dataEvents) {
+    for(DataEvent event:dataEvents) {
+        if (event.getUri().getPath().equals("/username")) {
+            String username = Packager.unpack(event.getDataItem(), String.class);
+
+            // Do something with the data
+            // ...
+        }
+    }
+}
+```
+
+The `Courier.getLocalNode` convenience method can also be useful in a `WearableListenerService`, as you might want to ignore data events that are sent from the local device.
 
 Build Configuration
 -------
