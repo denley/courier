@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Courier.iml" filepath="$PROJECT_DIR$/Courier.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/courier-annotations/courier-annotations.iml" filepath="$PROJECT_DIR$/courier-annotations/courier-annotations.iml" />
+      <module fileurl="file://$PROJECT_DIR$/courier-api/courier-api.iml" filepath="$PROJECT_DIR$/courier-api/courier-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/courier-compiler/courier-compiler.iml" filepath="$PROJECT_DIR$/courier-compiler/courier-compiler.iml" />
       <module fileurl="file://$PROJECT_DIR$/sample-handheld/sample-handheld.iml" filepath="$PROJECT_DIR$/sample-handheld/sample-handheld.iml" />
       <module fileurl="file://$PROJECT_DIR$/sample-wearable/sample-wearable.iml" filepath="$PROJECT_DIR$/sample-wearable/sample-wearable.iml" />
     </modules>

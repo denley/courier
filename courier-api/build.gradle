@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 21
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', '../courier-annotations/src/main/java']
+        }
+    }
+}
+
+dependencies {
+    compile 'me.denley.courier:courier-compiler:' + project.VERSION_NAME
+    compile 'com.google.android.gms:play-services-wearable:6.5.87'
+}
+
+apply from: 'android-release-aar.gradle'

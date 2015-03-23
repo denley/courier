@@ -21,8 +21,11 @@ android {
 }
 
 dependencies {
-    compile project(':library')
-    provided project(':library')
+    compile project(':courier-api')
+    provided project(':courier-api')
+
+    // This is used to test against release builds
+//    compile 'me.denley.courier:courier:' + project.VERSION_NAME
 
     compile 'com.google.android.support:wearable:1.1.0'
 }

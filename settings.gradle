@@ -1,1 +1,1 @@
-include ':sample-handheld', ':sample-wearable', ':library'
+include ':sample-handheld', ':sample-wearable', ':courier-api', ':courier-compiler', ':courier-annotations'

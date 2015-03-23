@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.2 - 2015-03-23
+### Fixed
+- Now compatible with the `android-apt` plugin
+
+## 1.0.1
+- Version skipped due to release build error
+
 ## 1.0.0 - 2015-03-12
 ### Added
 - `Courier.getAssetInputStream` convenience method

@@ -8,7 +8,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/library" />
+            <option value="$PROJECT_DIR$/courier-annotations" />
+            <option value="$PROJECT_DIR$/courier-api" />
+            <option value="$PROJECT_DIR$/courier-compiler" />
             <option value="$PROJECT_DIR$/sample-handheld" />
             <option value="$PROJECT_DIR$/sample-wearable" />
           </set>
