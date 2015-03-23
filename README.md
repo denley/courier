@@ -85,7 +85,7 @@ void onSmsReceived(SmsDescriptor smsMessage) {
 To be delivered between devices, objects must be serialized into a byte array. This can be done in two ways:
 
 1. Annotate your class with the `@Deliverable` interface. This will generate a utility class that will convert your object into a `DataMap` (and back again).
-2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class`s structure in the future. As such, it is not recommended. However, this means that you can send raw primitives (or Strings, etc.) as messages or data using `Courier`.
+2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class's structure in the future. As such, it is not recommended. However, this means that you can send raw primitives (or Strings, etc.) as messages or data using `Courier`.
 
 Example:
 
