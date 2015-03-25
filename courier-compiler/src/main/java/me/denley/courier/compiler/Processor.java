@@ -171,7 +171,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
                     throw new IllegalArgumentException("@LocalNode annotated field must be a "+NODE_CLASS);
                 } else if(annotationClass==RemoteNodes.class
                         && !element.asType().toString().equalsIgnoreCase("java.util.List<com.google.android.gms.wearable.Node>")) {
-                    throw new IllegalArgumentException("@LocalNode annotated field must be a List<Node>");
+                    throw new IllegalArgumentException("@RemoteNodes annotated field must be a List<Node>");
                 }
                 break;
             default:
