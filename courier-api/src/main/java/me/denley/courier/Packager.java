@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public final class Packager {
 
-    private static final Map<Class, DataPackager> PACKAGERS = new LinkedHashMap<>();
+    private static final Map<Class, DataPackager> PACKAGERS = new LinkedHashMap<Class, DataPackager>();
 
     /** For use by generated code. Don't use this. */
     public interface DataPackager<T> {

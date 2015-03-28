@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.3 - 2015-03-28
+### Fixed
+- Now compatible with JDK 7+ and JRE 6+
+
 ## 1.0.2 - 2015-03-23
 ### Fixed
 - Now compatible with the `android-apt` plugin

@@ -22,7 +22,7 @@ android {
 
 dependencies {
     compile project(':courier-api')
-    provided project(':courier-api')
+    provided project(':courier-compiler')
 
     // This is used to test against release builds
 //    compile 'me.denley.courier:courier:' + project.VERSION_NAME

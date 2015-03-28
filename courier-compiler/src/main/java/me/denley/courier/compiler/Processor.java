@@ -35,8 +35,8 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
 
 
 
-    private Map<TypeElement, PostalArea> postalAreaMap = new LinkedHashMap<>();
-    Set<String> targetClassNames = new LinkedHashSet<>();
+    private Map<TypeElement, PostalArea> postalAreaMap = new LinkedHashMap<TypeElement, PostalArea>();
+    Set<String> targetClassNames = new LinkedHashSet<String>();
 
     private PostalArea getPostalArea(TypeElement enclosingElement) {
         PostalArea area = postalAreaMap.get(enclosingElement);
@@ -60,7 +60,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
     }
 
     @Override public Set<String> getSupportedAnnotationTypes() {
-        final Set<String> set = new LinkedHashSet<>();
+        final Set<String> set = new LinkedHashSet<String>();
         set.add(ReceiveData.class.getName());
         set.add(ReceiveMessages.class.getName());
         set.add(LocalNode.class.getName());
@@ -70,13 +70,13 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
     }
 
     @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        postalAreaMap = new LinkedHashMap<>();
+        postalAreaMap = new LinkedHashMap<TypeElement, PostalArea>();
         verifyBackgroundThreadAnnotations(roundEnv);
 
         processReceiveDataAnnotations(roundEnv);
         processReceiveMessagesAnnotations(roundEnv);
         processLocalNodeAnnotations(roundEnv);
-        processRemotelNodeAnnotations(roundEnv);
+        processRemoteNodeAnnotations(roundEnv);
 
         processParents();
 
@@ -104,7 +104,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
         }
     }
 
-    private void processRemotelNodeAnnotations(RoundEnvironment roundEnv) {
+    private void processRemoteNodeAnnotations(RoundEnvironment roundEnv) {
         for(Element element:roundEnv.getElementsAnnotatedWith(RemoteNodes.class)) {
             processElementOrFail(element, null, RemoteNodes.class);
         }
@@ -190,7 +190,7 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
             final String name = element.getSimpleName().toString();
             final String payload = params.get(0).asType().toString();
 
-            final boolean backgroundThread = element.getAnnotationsByType(BackgroundThread.class).length>0;
+            final boolean backgroundThread = element.getAnnotation(BackgroundThread.class)!=null;
 
             return new Recipient(name, payload, params.size()>1, backgroundThread);
         }
@@ -213,10 +213,10 @@ public class Processor extends javax.annotation.processing.AbstractProcessor {
     private void verifyBackgroundThreadElement(Element element) {
         if(element.getKind()!=ElementKind.METHOD) {
             throw new IllegalArgumentException("@BackgroundThread may only be used on methods");
-        } else if (element.getAnnotationsByType(ReceiveData.class).length==0
-                && element.getAnnotationsByType(ReceiveMessages.class).length==0
-                && element.getAnnotationsByType(RemoteNodes.class).length==0
-                && element.getAnnotationsByType(LocalNode.class).length==0
+        } else if (element.getAnnotation(ReceiveData.class)==null
+                && element.getAnnotation(ReceiveMessages.class)==null
+                && element.getAnnotation(RemoteNodes.class)==null
+                && element.getAnnotation(LocalNode.class)==null
                 ) {
             throw new IllegalArgumentException("@BackgroundThread must be used with @ReceiveData, @ReceiveMessages, @RemoteNodes, or @LocalNode");
         }

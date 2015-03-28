@@ -27,11 +27,11 @@ public class DataMapProcessor extends AbstractProcessor {
     private static final String INDENT_2 = "        ";
 
 
-    Set<String> targetClassNames = new LinkedHashSet<>();
+    Set<String> targetClassNames = new LinkedHashSet<String>();
 
 
     @Override public Set<String> getSupportedAnnotationTypes() {
-        final Set<String> types = new LinkedHashSet<>();
+        final Set<String> types = new LinkedHashSet<String>();
         types.add(Deliverable.class.getName());
         return types;
     }

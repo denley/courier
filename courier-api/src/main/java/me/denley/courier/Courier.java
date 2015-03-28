@@ -32,7 +32,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public final class Courier {
 
-    private static final Map<Class, DeliveryBoy> DELIVERY_STAFF = new LinkedHashMap<>();
+    private static final Map<Class, DeliveryBoy> DELIVERY_STAFF = new LinkedHashMap<Class, DeliveryBoy>();
 
     /** For use by generated code. Don't use this. */
     public interface DeliveryBoy<T> {

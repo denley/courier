@@ -140,7 +140,7 @@ Build Configuration
 
 Using the jcenter repository, add the following line to the gradle dependencies for your module.
 ```groovy
-compile 'me.denley.courier:courier:1.0.2'
+compile 'me.denley.courier:courier:1.0.3'
 ```
 
 If you use ProGuard, you will need to add the following lines to your configuration. You will probably need to add this to the configurations for both your handheld and wearable modules.
@@ -156,7 +156,7 @@ If you use ProGuard, you will need to add the following lines to your configurat
 -keepclasseswithmembernames class * {
     @me.denley.courier.* <methods>;
 }
--keep @me.denley.courier.* public class *
+-keep @me.denley.courier.* public class * { *; }
 ```
 
 Details

@@ -24,10 +24,10 @@ class PostalArea {
         this.targetClassName = targetClassName;
     }
 
-    private final Map<String, Route> dataRoutes = new LinkedHashMap<>();
-    private final Map<String, Route> messageRoutes = new LinkedHashMap<>();
-    private final Set<Recipient> localNodeRecipients = new LinkedHashSet<>();
-    private final Set<Recipient> remoteNodeRecipients = new LinkedHashSet<>();
+    private final Map<String, Route> dataRoutes = new LinkedHashMap<String, Route>();
+    private final Map<String, Route> messageRoutes = new LinkedHashMap<String, Route>();
+    private final Set<Recipient> localNodeRecipients = new LinkedHashSet<Recipient>();
+    private final Set<Recipient> remoteNodeRecipients = new LinkedHashSet<Recipient>();
 
     public void addLocalNodeRecipient(Recipient recipient) {
         localNodeRecipients.add(recipient);

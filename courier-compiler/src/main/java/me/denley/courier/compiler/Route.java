@@ -6,7 +6,7 @@ import java.util.Set;
 class Route {
 
     public final String path;
-    public final Set<Recipient> recipients = new LinkedHashSet<>();
+    public final Set<Recipient> recipients = new LinkedHashSet<Recipient>();
 
     public Route(String path) {
         this.path = path;
@@ -49,7 +49,7 @@ class Route {
     }
 
     private Set<String> getTargetTypes() {
-        final Set<String> types = new LinkedHashSet<>();
+        final Set<String> types = new LinkedHashSet<String>();
         for(Recipient recipient:recipients) {
             if(!types.contains(recipient.payloadType)) {
                 types.add(recipient.payloadType);
