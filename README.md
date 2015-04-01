@@ -7,6 +7,13 @@ A delivery service for Android Wear. Courier uses `Wearable.DataApi` and `Wearab
 Usage
 -------
 
+### Build Dependency
+
+Using the jcenter repository, add the following line to the gradle dependencies for your modules. You should add this to both your handheld and wearable modules.
+```groovy
+compile 'me.denley.courier:courier:1.1.0'
+```
+
 ### Basic Usage
 
 Simply add `@ReceiveMessages` and `@ReceiveData` annotations to your methods and fields to assign them as callbacks for `MessageApi` and `DataApi` events. Call `Courier.startReceiving(this)` to initialize the listeners and start receiving your callbacks.
@@ -47,9 +54,23 @@ public void onLoginSuccess(String username) {
 ```
 
 
-### Nodes (Connected Devices)
+### Checking for Connected Devices
 
+#### Wearable API Status
+Often it will be prudent to check whether or not the user has a wearable device paired with their phone. For this, you can use the following method:
+```java
+// This must be done on a background thread
+boolean hasWearableDevice = Courier.isWearableApiAvailable(context);
+```
+
+Note: This is not the same as whether or not the watch is in range of the phone ("connected"). It determines whether the user has the `Android Wear` app installed and has paired a wearable device.
+
+If this method returns false, all other method calls to the `Courier` class will simply be ignored, and return `null` where applicable.
+
+
+#### Connected Devices
 You can retrieve a list of connected devices using the `@RemoteNodes` annotation. When devices are connected or disconnected, the callback will be invoked again.
+This represents devices that are paired, in range, and ready to send and receive data and messages.
 
 ```java
 @RemoteNodes
@@ -59,14 +80,23 @@ void onConnectionStateChanged(List<Node> connectedNodes) {
 }
 ```
 
-You can also retrieve the local node using the `@LocalNode` annotation. This will only be updated once, as it never changes.
+#### Local Device
+Sometimes having the local node can be useful. For example, you might want to ignore data items originating from the same device.
+
+You can retrieve the local node using the `@LocalNode` annotation. This will only be updated once, as it never changes. Alternatively, you can retrieve the local node by calling `Courier.getLocalNode(context)`. This must be done on a background thread.
 
 ```java
 @LocalNode
 Node localNode;
 ```
 
-Alternatively, you can retrieve the local node by calling `Courier.getLocalNode(context)`. This must be done on a background thread.
+Or:
+
+```java
+// This must be done on a background thread
+localNode = Courier.getLocalNode(context);
+```
+
 
 ### Threading
 
@@ -82,12 +112,10 @@ void onSmsReceived(SmsDescriptor smsMessage) {
 
 ### Object Serialization
 
-To be delivered between devices, objects must be serialized into a byte array. This can be done in two ways:
+To be delivered between devices, objects must be able to be serialized into a byte array. Objects of any class implementing `Serializable` can be delivered. This includes primatives, Strings, and many other classes in the Android API.
+For custom classes it is recommended to avoid relying on the `Serializable` interface, as it will restrict your ability to change your data structures in the future.
 
-1. Annotate your class with the `@Deliverable` interface. This will generate a utility class that will convert your object into a `DataMap` (and back again).
-2. Have your class implement java's `Serializable` interface. This restricts your ability to change the class's structure in the future. As such, it is not recommended. However, this means that you can send raw primitives (or Strings, etc.) as messages or data using `Courier`.
-
-Example:
+Instead, annotate your classes with Courier's `@Deliverable` annotation. This will automatically generate methods to convert your objects into a `DataMap` and back again. For example:
 
 ```java
 @Deliverable
@@ -100,8 +128,10 @@ public class SmsDescriptor {
 }
 ```
 
-This `DataMap` serialization process supports arbitrary object types as fields, as long as the object's class is also annotated with `@Deliverable` or implements `Serializable`.
-`Asset`s can also be included as fields. Though this can only be used with the DataApi (not the MessageApi). For convenience, `Asset`s can be opened using the `Courier.getAssetInputStream` method.
+`@Deliverable` classes support any field types that can be saved into a `DataMap` as well as any other `@Deliverable` or `Seriializable` object types.
+
+`Asset`s can also be included as fields, and should be used for any large blobs of data (anything larger than a few kilobytes). When received, `Asset`s can be opened using the `Courier.getAssetInputStream` method. `@Deliverable` classes can also contain `Bitmap` fields, which will automatically be transferred as `Asset`s.
+
 
 ### WearableListenerService
 
@@ -114,7 +144,7 @@ Example:
 ```java
 @Override public void onMessageReceived(MessageEvent messageEvent) {
     if (messageEvent.getPath().equals("/incoming_sms")) {
-        SmsDescriptor mySms = Packager.unpack(messageEvent.getData(), SmsDescriptor.class);
+        SmsDescriptor mySms = Packager.unpack(this, messageEvent.getData(), SmsDescriptor.class);
 
         // Do something with the message
         // ...
@@ -124,7 +154,7 @@ Example:
 @Override public void onDataChanged(DataEventBuffer dataEvents) {
     for(DataEvent event:dataEvents) {
         if (event.getUri().getPath().equals("/username")) {
-            String username = Packager.unpack(event.getDataItem(), String.class);
+            String username = Packager.unpack(this, event.getDataItem(), String.class);
 
             // Do something with the data
             // ...
@@ -135,13 +165,21 @@ Example:
 
 The `Courier.getLocalNode` convenience method can also be useful in a `WearableListenerService`, as you might want to ignore data events that are sent from the local device.
 
-Build Configuration
--------
+### Miscellaneous
 
-Using the jcenter repository, add the following line to the gradle dependencies for your module.
-```groovy
-compile 'me.denley.courier:courier:1.0.3'
-```
+- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving` (but asynchronously).
+- `@DeliverData` callbacks will also be called immediately when the device connects to a device.
+- `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi` (they are missed if the device is disconnected).
+- If an empty message is sent or if a data item is removed, a `null` object will be passed to the listener. Be sure to check for `null` values!
+
+### Testing
+
+Courier supports using mock implementations of the wearable API for unit testing. Simply call `Courier.attachMockDataApi`, `Courier.attachMockMessageApi`, and `Courier.attachMockNodeApi` to provide your testing API implementations.
+Mocked APIs will be called with a null `GoogleApiClient` object.
+Your mock APIs should be attached before making any calls to `Courier.startReceiving` and you should not attach new APIs until all targets have called `Courier.stopReceiving`.
+
+
+### ProGuard Configuration
 
 If you use ProGuard, you will need to add the following lines to your configuration. You will probably need to add this to the configurations for both your handheld and wearable modules.
 
@@ -158,14 +196,6 @@ If you use ProGuard, you will need to add the following lines to your configurat
 }
 -keep @me.denley.courier.* public class * { *; }
 ```
-
-Details
--------
-
-- `@DeliverData` callbacks will be invoked immediately after calling `Courier.startReceiving` (but asynchronously).
-- `@DeliverData` callbacks will also be called immediately when the device connects to a device.
-- `@DeliverMessage` callbacks will only be invoked at the time that a message is received from the `MessageApi` (they are missed if the device is disconnected).
-- If an empty message is sent or if a data item is removed, a `null` object will be passed to the listener. Be sure to check for `null` values!
 
 License
 -------
