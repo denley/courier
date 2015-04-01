@@ -297,8 +297,13 @@ public final class Courier {
         }.start();
     }
 
-    @SuppressWarnings("unchecked")
+
     private static <T> DeliveryBoy<T> findDeliveryBoy(Class targetClass) {
+        return findDeliveryBoy(targetClass, targetClass);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> DeliveryBoy<T> findDeliveryBoy(Class targetClass, Class actualClass) {
         DeliveryBoy<T> messenger = DELIVERY_STAFF.get(targetClass);
         if(messenger!=null) {
             return messenger;
@@ -311,9 +316,9 @@ public final class Courier {
         }catch (Exception e) {
             Class superClass = targetClass.getSuperclass();
             if(superClass==Object.class) {
-                throw new IllegalStateException("Courier not found for "+targetClass.getName()+". Missing annotations?");
+                throw new IllegalStateException("Courier not found for "+actualClass.getName()+". Missing annotations?");
             } else {
-                messenger = findDeliveryBoy(superClass);
+                messenger = findDeliveryBoy(superClass, actualClass);
             }
         }
 
