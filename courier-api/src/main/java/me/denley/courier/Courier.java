@@ -15,7 +15,10 @@ import android.view.View;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
@@ -44,7 +47,6 @@ public final class Courier {
 
     @Nullable private static GoogleApiClient googleApiClient = null;
 
-
     /**
      * Determines whether or not the Wearable API is available to communicate with a paired device. If this method
      * returns false then all other methods in this class will silently fail (and {@link #getLocalNode} and {@link #getAssetInputStream} will return null).
@@ -63,6 +65,9 @@ public final class Courier {
         if(Looper.myLooper()==Looper.getMainLooper()) {
             throw new IllegalStateException("hasPairedWearableDevice can not be called from the UI thread");
         }
+        if(WearableApis.hasAllMockApis()) {
+            return true;
+        }
 
         ensureApiClient(context);
         return googleApiClient!=null;
@@ -78,10 +83,10 @@ public final class Courier {
      * @param data      The object to serialize and send to the wearable API on the given path.
      */
     public static void deliverData(final Context context, final String path, final Object data) {
-        makeWearableApiCall(context, new Runnable() {
+        makeWearableApiCall(context, WearableApis.hasMockDataApi(), new Runnable() {
             @Override public void run() {
                 final PutDataRequest request = Packager.pack(path, data);
-                Wearable.DataApi.putDataItem(googleApiClient, request);
+                WearableApis.DataApi.putDataItem(googleApiClient, request);
             }
         });
     }
@@ -96,13 +101,16 @@ public final class Courier {
      * @param data      The object to serialize and send.
      */
     public static void deliverMessage(final Context context, final String path, final Object data) {
-        makeWearableApiCall(context, new Runnable() {
+        makeWearableApiCall(
+                context,
+                WearableApis.hasMockMessageApi() && WearableApis.hasMockNodeApi(),
+                new Runnable() {
             @Override public void run() {
                 final byte[] bytes = Packager.packBytes(data);
 
-                final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await().getNodes();
+                final List<Node> nodes = WearableApis.NodeApi.getConnectedNodes(googleApiClient).await().getNodes();
                 for (Node node : nodes) {
-                    Wearable.MessageApi.sendMessage(googleApiClient, node.getId(), path, bytes);
+                    WearableApis.MessageApi.sendMessage(googleApiClient, node.getId(), path, bytes);
                 }
             }
         });
@@ -120,10 +128,10 @@ public final class Courier {
      * @param data      The object to serialize and send.
      */
     public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Object data) {
-        makeWearableApiCall(context, new Runnable() {
+        makeWearableApiCall(context, WearableApis.hasMockMessageApi(), new Runnable() {
             @Override public void run() {
                 final byte[] bytes = Packager.packBytes(data);
-                Wearable.MessageApi.sendMessage(googleApiClient, destinationNodeId, path, bytes);
+                WearableApis.MessageApi.sendMessage(googleApiClient, destinationNodeId, path, bytes);
             }
         });
     }
@@ -151,7 +159,7 @@ public final class Courier {
      * @param nodeId The node that created the data item to be removed.
      */
     public static void deleteData(final Context context, final String path, final String nodeId) {
-        makeWearableApiCall(context, new Runnable(){
+        makeWearableApiCall(context, WearableApis.hasMockDataApi(), new Runnable(){
             @Override public void run() {
                 final Uri.Builder uri = new Uri.Builder();
                 uri.scheme("wear");
@@ -160,7 +168,7 @@ public final class Courier {
                     uri.encodedAuthority(nodeId);
                 }
 
-                Wearable.DataApi.deleteDataItems(googleApiClient, uri.build());
+                WearableApis.DataApi.deleteDataItems(googleApiClient, uri.build());
             }
         });
     }
@@ -177,9 +185,13 @@ public final class Courier {
             throw new IllegalStateException("getLocalNode can not be called from the UI thread");
         }
 
+        if(WearableApis.hasMockNodeApi()) {
+            return WearableApis.NodeApi.getLocalNode(googleApiClient).await().getNode();
+        }
+
         ensureApiClient(context);
-        if(googleApiClient!=null) {
-            return Wearable.NodeApi.getLocalNode(googleApiClient).await().getNode();
+        if (googleApiClient != null) {
+            return WearableApis.NodeApi.getLocalNode(googleApiClient).await().getNode();
         } else {
             return null;
         }
@@ -198,9 +210,13 @@ public final class Courier {
             throw new IllegalStateException("getAssetInputStream can not be called from the UI thread");
         }
 
+        if(WearableApis.hasMockDataApi()) {
+            return WearableApis.DataApi.getFdForAsset(googleApiClient, asset).await().getInputStream();
+        }
+
         ensureApiClient(context);
         if(googleApiClient!=null) {
-            return Wearable.DataApi.getFdForAsset(googleApiClient, asset).await().getInputStream();
+            return WearableApis.DataApi.getFdForAsset(googleApiClient, asset).await().getInputStream();
         } else {
             return null;
         }
@@ -216,7 +232,7 @@ public final class Courier {
     public static <T> void startReceiving(final Context context, final T target) {
         final DeliveryBoy<T> messenger = findDeliveryBoy(target.getClass());
 
-        makeWearableApiCall(context, new Runnable() {
+        makeWearableApiCall(context, WearableApis.hasAllMockApis(), new Runnable() {
             @Override public void run() {
                 messenger.startReceiving(googleApiClient, target);
             }
@@ -296,12 +312,16 @@ public final class Courier {
         messenger.stopReceiving(target);
     }
 
-    private static void makeWearableApiCall(final Context context, final Runnable task) {
+    private static void makeWearableApiCall(final Context context, final boolean mockMode, final Runnable task) {
         new Thread(){
             public void run() {
-                ensureApiClient(context);
-                if(googleApiClient!=null) {
+                if(mockMode) {
                     task.run();
+                } else {
+                    ensureApiClient(context);
+                    if (googleApiClient != null) {
+                        task.run();
+                    }
                 }
             }
         }.start();
@@ -309,6 +329,9 @@ public final class Courier {
 
     private static void ensureApiClient(final Context context) {
         if(googleApiClient!=null && googleApiClient.isConnected()) {
+            return;
+        }
+        if(WearableApis.hasAllMockApis()) {
             return;
         }
 
@@ -351,6 +374,44 @@ public final class Courier {
         return messenger;
     }
 
+    /**
+     * Attach a mock DataApi for testing.
+     *
+     * @param mockDataApi A custom DataApi implementation to use instead of Wearable.DataApi, or null to revert back to Wearable.DataApi
+     */
+    public static void attachMockDataApi(@Nullable final DataApi mockDataApi) {
+        if(mockDataApi==null) {
+            WearableApis.DataApi = Wearable.DataApi;
+        } else {
+            WearableApis.DataApi = mockDataApi;
+        }
+    }
+
+    /**
+     * Attach a mock MessageApi for testing.
+     *
+     * @param mockMessageApi A custom MessageApi implementation to use instead of Wearable.MessageApi, or null to revert back to Wearable.MessageApi
+     */
+    public static void attachMockMessageApi(@Nullable final MessageApi mockMessageApi) {
+        if(mockMessageApi==null) {
+            WearableApis.MessageApi = Wearable.MessageApi;
+        } else {
+            WearableApis.MessageApi = mockMessageApi;
+        }
+    }
+
+    /**
+     * Attach a mock NodeApi for testing.
+     *
+     * @param mockNodeApi A custom NodeApi implementation to use instead of Wearable.NodeApi, or null to revert back to Wearable.NodeApi
+     */
+    public static void attachMockNodeApi(@Nullable final NodeApi mockNodeApi) {
+        if(mockNodeApi==null) {
+            WearableApis.NodeApi = Wearable.NodeApi;
+        } else {
+            WearableApis.NodeApi = mockNodeApi;
+        }
+    }
 
     // Don't allow instantiation
     private Courier(){}
