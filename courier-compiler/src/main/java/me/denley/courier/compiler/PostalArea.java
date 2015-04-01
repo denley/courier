@@ -12,6 +12,7 @@ class PostalArea {
     public static final String INDENT_3 = "            ";
     public static final String INDENT_4 = "                ";
     public static final String INDENT_5 = "                    ";
+    public static final String INDENT_6 = "                        ";
 
 
 
@@ -84,6 +85,11 @@ class PostalArea {
         builder.append("\n");
         builder.append("import android.os.Handler;\n");
         builder.append("import android.os.Looper;\n");
+        builder.append("import android.content.Context;\n");
+        builder.append("\n");
+        builder.append("import static me.denley.courier.WearableApis.NODE;\n");
+        builder.append("import static me.denley.courier.WearableApis.DATA;\n");
+        builder.append("import static me.denley.courier.WearableApis.MESSAGE;\n");
         builder.append("\n");
     }
 
@@ -98,8 +104,7 @@ class PostalArea {
         }
 
         builder.append(" {\n");
-
-        builder.append(INDENT).append("private GoogleApiClient apiClient = null;\n");
+        builder.append(INDENT).append("private Context context;\n");
         builder.append(INDENT).append("private Handler handler = new Handler(Looper.getMainLooper());\n\n");
 
         writeListenerMaps(builder);
@@ -138,12 +143,12 @@ class PostalArea {
     }
 
     private void writeStartReceivingMethod(StringBuilder builder) {
-        builder.append(INDENT).append("public void startReceiving(final GoogleApiClient apiClient, final T target) {\n");
+        builder.append(INDENT).append("public void startReceiving(final Context context, final T target) {\n");
         if(parentClass!=null) {
-            builder.append(INDENT_2).append("super.startReceiving(apiClient, target);\n");
+            builder.append(INDENT_2).append("super.startReceiving(context, target);\n");
         }
 
-        builder.append(INDENT_2).append("this.apiClient = apiClient;\n");
+        builder.append(INDENT_2).append("this.context = context;\n");
         if(!localNodeRecipients.isEmpty()) {
             builder.append(INDENT_2).append("initLocalNodes(target);\n");
         }
@@ -164,6 +169,7 @@ class PostalArea {
         if(parentClass!=null) {
             builder.append(INDENT_2).append("super.stopReceiving(target);\n");
         }
+        builder.append(INDENT_2).append("GoogleApiClient apiClient = WearableApis.googleApiClient;\n");
         builder.append(INDENT_2).append("if(apiClient==null) {\n");
         builder.append(INDENT_3).append("return;\n");
         builder.append(INDENT_2).append("}\n\n");
@@ -191,29 +197,34 @@ class PostalArea {
 
     private void writeInitLocalNodesMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void initLocalNodes(final T target) {\n");
-        builder.append(INDENT_2).append("final Node localNode = WearableApis.getNodeApi().getLocalNode(apiClient)\n");
-        builder.append(INDENT_4).append(".await().getNode();\n\n");
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, NODE, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+        builder.append(INDENT_4).append("final Node localNode = WearableApis.getNodeApi().getLocalNode(apiClient).await().getNode();\n");
+
 
         for(Recipient localNodeRecipient:localNodeRecipients) {
             if(localNodeRecipient.backgroundThread) {
-                builder.append(INDENT_2);
+                builder.append(INDENT_4);
                 localNodeRecipient.writeLocalNodeBindingTo(builder);
             }
         }
 
         if(Recipient.hasMainThreadReceipient(localNodeRecipients)) {
-            builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
-            builder.append(INDENT_3).append("public void run() {\n");
+            builder.append(INDENT_4).append("handler.post(new Runnable() {\n");
+            builder.append(INDENT_5).append("public void run() {\n");
             for (Recipient localNodeRecipient : localNodeRecipients) {
                 if (!localNodeRecipient.backgroundThread) {
-                    builder.append(INDENT_4);
+                    builder.append(INDENT_6);
                     localNodeRecipient.writeLocalNodeBindingTo(builder);
                 }
             }
-            builder.append(INDENT_3).append("}\n");
-            builder.append(INDENT_2).append("});\n");
+            builder.append(INDENT_5).append("}\n");
+            builder.append(INDENT_4).append("});\n");
         }
 
+
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
         builder.append(INDENT).append("}\n\n");
     }
 
@@ -226,7 +237,11 @@ class PostalArea {
         builder.append(INDENT_2).append("};\n\n");
 
         builder.append(INDENT_2).append("messageListeners.put(target, ml);\n");
-        builder.append(INDENT_2).append("WearableApis.getMessageApi().addListener(apiClient, ml);\n");
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, MESSAGE, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+        builder.append(INDENT_4).append("WearableApis.getMessageApi().addListener(apiClient, ml);\n");
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
 
         builder.append(INDENT).append("}\n\n");
     }
@@ -255,7 +270,13 @@ class PostalArea {
         builder.append(INDENT_3).append("}\n");
         builder.append(INDENT_2).append("};\n");
         builder.append(INDENT_2).append("nodeListeners.put(target, nl);\n");
-        builder.append(INDENT_2).append("WearableApis.getNodeApi().addListener(apiClient, nl);\n\n");
+
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, NODE, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+        builder.append(INDENT_4).append("WearableApis.getNodeApi().addListener(apiClient, nl);\n");
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
+
         if(!remoteNodeRecipients.isEmpty()) {
             builder.append(INDENT_2).append("deliverRemoteNodes(target);\n");
         }
@@ -265,28 +286,33 @@ class PostalArea {
     private void writeDeliverRemoteNodesMethod(StringBuilder builder) {
         builder.append(INDENT).append("private void deliverRemoteNodes(final T target) {\n");
 
-        builder.append(INDENT_2).append("final List<Node> nodes = WearableApis.getNodeApi().getConnectedNodes(apiClient)\n");
-        builder.append(INDENT_4).append(".await().getNodes();\n\n");
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, NODE, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+
+        builder.append(INDENT_4).append("final List<Node> nodes = WearableApis.getNodeApi().getConnectedNodes(apiClient).await().getNodes();\n\n");
 
         for(Recipient localNodeRecipient:remoteNodeRecipients) {
             if(localNodeRecipient.backgroundThread) {
-                builder.append(INDENT_2);
+                builder.append(INDENT_4);
                 localNodeRecipient.writeRemoteNodeBindingTo(builder);
             }
         }
 
         if(Recipient.hasMainThreadReceipient(remoteNodeRecipients)) {
-            builder.append(INDENT_2).append("handler.post(new Runnable() {\n");
-            builder.append(INDENT_3).append("public void run() {\n");
+            builder.append(INDENT_4).append("handler.post(new Runnable() {\n");
+            builder.append(INDENT_5).append("public void run() {\n");
             for (Recipient localNodeRecipient : remoteNodeRecipients) {
                 if (!localNodeRecipient.backgroundThread) {
-                    builder.append(INDENT_4);
+                    builder.append(INDENT_6);
                     localNodeRecipient.writeRemoteNodeBindingTo(builder);
                 }
             }
-            builder.append(INDENT_3).append("}\n");
-            builder.append(INDENT_2).append("});\n");
+            builder.append(INDENT_5).append("}\n");
+            builder.append(INDENT_4).append("});\n");
         }
+
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
 
         builder.append(INDENT).append("}\n\n");
     }
@@ -301,7 +327,11 @@ class PostalArea {
         builder.append(INDENT_3).append("}\n");
         builder.append(INDENT_2).append("};\n");
         builder.append(INDENT_2).append("dataListeners.put(target, dl);\n");
-        builder.append(INDENT_2).append("WearableApis.getDataApi().addListener(apiClient, dl);\n");
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, DATA, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+        builder.append(INDENT_4).append("WearableApis.getDataApi().addListener(apiClient, dl);\n");
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
         builder.append(INDENT_2).append("initializeData(target);\n");
         builder.append(INDENT).append("}\n\n");
     }
@@ -318,12 +348,18 @@ class PostalArea {
     }
 
     private void writeInitDataMethod(StringBuilder builder) {
-        builder.append(INDENT).append("private void initializeData(T target) {\n");
-        builder.append(INDENT_2).append("final DataItemBuffer existingItems = WearableApis.getDataApi().getDataItems(apiClient).await();\n");
-        builder.append(INDENT_2).append("for(DataItem item:existingItems) {\n");
-        builder.append(INDENT_3).append("deliverData(target, item);\n");
-        builder.append(INDENT_2).append("}\n");
-        builder.append(INDENT_2).append("existingItems.release();\n");
+        builder.append(INDENT).append("private void initializeData(final T target) {\n");
+        builder.append(INDENT_2).append("WearableApis.makeWearableApiCall(context, DATA, new WearableApis.WearableApiRunnable() {\n");
+        builder.append(INDENT_3).append("public void run(GoogleApiClient apiClient){\n");
+
+        builder.append(INDENT_4).append("final DataItemBuffer existingItems = WearableApis.getDataApi().getDataItems(apiClient).await();\n");
+        builder.append(INDENT_4).append("for(DataItem item:existingItems) {\n");
+        builder.append(INDENT_5).append("deliverData(target, item);\n");
+        builder.append(INDENT_4).append("}\n");
+        builder.append(INDENT_4).append("existingItems.release();\n");
+
+        builder.append(INDENT_3).append("}\n");
+        builder.append(INDENT_2).append("});\n");
         builder.append(INDENT).append("}\n\n");
     }
 
