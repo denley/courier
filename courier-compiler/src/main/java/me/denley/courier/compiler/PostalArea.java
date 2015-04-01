@@ -89,7 +89,7 @@ class PostalArea {
 
     private void writeClassDef(StringBuilder builder) {
         builder.append("public class ").append(targetClassName).append(Processor.CLASS_SUFFIX)
-                .append("<T extends ").append(targetClassName).append(">");
+                .append("<T extends ").append(targetClassName.replace('$','.')).append(">");
 
         if(parentClass==null) {
             builder.append(" implements Courier.DeliveryBoy<T>");

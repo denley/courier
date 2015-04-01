@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Now uses a singleton `GoogleApiClient` for efficiency
+- Can now use Courier's annotation in nested/inner classes
 
 ## 1.0.3 - 2015-03-28
 ### Fixed
