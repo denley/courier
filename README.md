@@ -112,7 +112,7 @@ Often you will want to listen for message and data events outside of your 'Activ
 Example:
 
 ```java
-@Override public void onMessageReceived(@NonNull MessageEvent messageEvent) {
+@Override public void onMessageReceived(MessageEvent messageEvent) {
     if (messageEvent.getPath().equals("/incoming_sms")) {
         SmsDescriptor mySms = Packager.unpack(messageEvent.getData(), SmsDescriptor.class);
 
