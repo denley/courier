@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+- Now uses a singleton `GoogleApiClient` for efficiency
+
 ## 1.0.3 - 2015-03-28
 ### Fixed
 - Now compatible with JDK 7+ and JRE 6+

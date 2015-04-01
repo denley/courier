@@ -93,7 +93,6 @@
     <orderEntry type="library" exported="" name="play-services-base-6.5.87" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-wearable-6.5.87" level="project" />
-    <orderEntry type="library" exported="" name="courier-compiler-1.0.3" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.0" level="project" />
   </component>
 </module>

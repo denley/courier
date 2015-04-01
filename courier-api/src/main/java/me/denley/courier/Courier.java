@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
@@ -40,9 +41,8 @@ public final class Courier {
         public void stopReceiving(T target);
     }
 
-    private interface WearableApiTask {
-        public void run(GoogleApiClient apiClient);
-    }
+
+    @Nullable private static GoogleApiClient googleApiClient = null;
 
     /**
      * Puts the given object to the specified path in the Wearable.DataApi.
@@ -54,10 +54,10 @@ public final class Courier {
      * @param data      The object to serialize and send to the wearable API on the given path.
      */
     public static void deliverData(final Context context, final String path, final Object data) {
-        makeWearableApiCall(context, new WearableApiTask() {
-            @Override public void run(GoogleApiClient apiClient) {
+        makeWearableApiCall(context, new Runnable() {
+            @Override public void run() {
                 final PutDataRequest request = Packager.pack(path, data);
-                Wearable.DataApi.putDataItem(apiClient, request);
+                Wearable.DataApi.putDataItem(googleApiClient, request);
             }
         });
     }
@@ -72,13 +72,13 @@ public final class Courier {
      * @param data      The object to serialize and send.
      */
     public static void deliverMessage(final Context context, final String path, final Object data) {
-        makeWearableApiCall(context, new WearableApiTask() {
-            @Override public void run(GoogleApiClient apiClient) {
+        makeWearableApiCall(context, new Runnable() {
+            @Override public void run() {
                 final byte[] bytes = Packager.packBytes(data);
 
-                final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(apiClient).await().getNodes();
+                final List<Node> nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await().getNodes();
                 for (Node node : nodes) {
-                    Wearable.MessageApi.sendMessage(apiClient, node.getId(), path, bytes);
+                    Wearable.MessageApi.sendMessage(googleApiClient, node.getId(), path, bytes);
                 }
             }
         });
@@ -96,10 +96,10 @@ public final class Courier {
      * @param data      The object to serialize and send.
      */
     public static void deliverMessage(final Context context, final String path, final String destinationNodeId, final Object data) {
-        makeWearableApiCall(context, new WearableApiTask() {
-            @Override public void run(GoogleApiClient apiClient) {
+        makeWearableApiCall(context, new Runnable() {
+            @Override public void run() {
                 final byte[] bytes = Packager.packBytes(data);
-                Wearable.MessageApi.sendMessage(apiClient, destinationNodeId, path, bytes);
+                Wearable.MessageApi.sendMessage(googleApiClient, destinationNodeId, path, bytes);
             }
         });
     }
@@ -127,8 +127,8 @@ public final class Courier {
      * @param nodeId The node that created the data item to be removed.
      */
     public static void deleteData(final Context context, final String path, final String nodeId) {
-        makeWearableApiCall(context, new WearableApiTask(){
-            @Override public void run(GoogleApiClient apiClient) {
+        makeWearableApiCall(context, new Runnable(){
+            @Override public void run() {
                 final Uri.Builder uri = new Uri.Builder();
                 uri.scheme("wear");
                 uri.encodedPath(path);
@@ -136,7 +136,7 @@ public final class Courier {
                     uri.encodedAuthority(nodeId);
                 }
 
-                Wearable.DataApi.deleteDataItems(apiClient, uri.build());
+                Wearable.DataApi.deleteDataItems(googleApiClient, uri.build());
             }
         });
     }
@@ -153,14 +153,9 @@ public final class Courier {
             throw new IllegalStateException("getLocalNode can not be called from the UI thread");
         }
 
-        final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
-                .addApi(Wearable.API)
-                .build();
-
-        final ConnectionResult result = apiClient.blockingConnect();
-
-        if(result.isSuccess()) {
-            return Wearable.NodeApi.getLocalNode(apiClient).await().getNode();
+        ensureApiClient(context);
+        if(googleApiClient!=null) {
+            return Wearable.NodeApi.getLocalNode(googleApiClient).await().getNode();
         } else {
             return null;
         }
@@ -179,13 +174,9 @@ public final class Courier {
             throw new IllegalStateException("getAssetInputStream can not be called from the UI thread");
         }
 
-        final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
-                .addApi(Wearable.API)
-                .build();
-
-        final ConnectionResult result = apiClient.blockingConnect();
-        if(result.isSuccess()) {
-            return Wearable.DataApi.getFdForAsset(apiClient, asset).await().getInputStream();
+        ensureApiClient(context);
+        if(googleApiClient!=null) {
+            return Wearable.DataApi.getFdForAsset(googleApiClient, asset).await().getInputStream();
         } else {
             return null;
         }
@@ -201,9 +192,9 @@ public final class Courier {
     public static <T> void startReceiving(final Context context, final T target) {
         final DeliveryBoy<T> messenger = findDeliveryBoy(target.getClass());
 
-        makeWearableApiCall(context, new WearableApiTask() {
-            @Override public void run(GoogleApiClient apiClient) {
-                messenger.startReceiving(apiClient, target);
+        makeWearableApiCall(context, new Runnable() {
+            @Override public void run() {
+                messenger.startReceiving(googleApiClient, target);
             }
         });
     }
@@ -281,22 +272,32 @@ public final class Courier {
         messenger.stopReceiving(target);
     }
 
-    private static void makeWearableApiCall(final Context context, final WearableApiTask task) {
+    private static void makeWearableApiCall(final Context context, final Runnable task) {
         new Thread(){
             public void run() {
-                final GoogleApiClient apiClient = new GoogleApiClient.Builder(context)
-                        .addApi(Wearable.API)
-                        .build();
-
-                final ConnectionResult result = apiClient.blockingConnect();
-
-                if(result.isSuccess()) {
-                    task.run(apiClient);
+                ensureApiClient(context);
+                if(googleApiClient!=null) {
+                    task.run();
                 }
             }
         }.start();
     }
 
+    private static void ensureApiClient(final Context context) {
+        if(googleApiClient!=null && googleApiClient.isConnected()) {
+            return;
+        }
+
+        googleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(Wearable.API)
+                .build();
+
+        final ConnectionResult result = googleApiClient.blockingConnect();
+
+        if(!result.isSuccess()) {
+            googleApiClient = null;
+        }
+    }
 
     private static <T> DeliveryBoy<T> findDeliveryBoy(Class targetClass) {
         return findDeliveryBoy(targetClass, targetClass);
