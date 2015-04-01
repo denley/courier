@@ -1,6 +1,9 @@
 package me.denley.courier.sample;
 
+import android.graphics.Bitmap;
+
 import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataMap;
 
 import java.util.ArrayList;
 
@@ -12,7 +15,7 @@ public class Song {
     public String title;
     public Artist artist;
     public long length;
-
+    public Bitmap albumArt;
 
     // Test variables (to test each type of mapping)
     public Asset assetTest;
@@ -21,8 +24,8 @@ public class Song {
     public byte aByte;
     public Byte anotherByte;
     public byte[] bytes;
-    public com.google.android.gms.wearable.DataMap map;
-    public ArrayList<com.google.android.gms.wearable.DataMap> maps;
+    public DataMap map;
+    public ArrayList<DataMap> maps;
     public double aDouble;
     public Double anotherDouble;
     public float aFloat;

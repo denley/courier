@@ -37,7 +37,7 @@ dependencies {
     // Currently this line needs to be removed when building a compiler release version,
     // but added when building the API release version.
     // There is probably a better way to do this.
-    compile 'me.denley.courier:courier-compiler:' + project.VERSION_NAME
+    //compile 'me.denley.courier:courier-compiler:' + project.VERSION_NAME
 
 
     compile 'com.google.android.gms:play-services-wearable:6.5.87'

@@ -2,9 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 1.1.0 - Unreleased
 ### Added
 - `Courier.isWearableApiAvailable` method, to determine wearable API availability.
+- `Bitmap` fields are now allowed in `@Deliverable` annotated classes. They are automatically sent and received as an `Asset`.
 
 ### Fixed
 - Now uses a singleton `GoogleApiClient` for efficiency

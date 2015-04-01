@@ -1,5 +1,7 @@
 package me.denley.courier;
 
+import android.content.Context;
+
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
@@ -20,6 +22,7 @@ import java.util.Map;
  * DataMaps, DataItems, and byte arrays. This in turn, allows objects to be transferred
  * to other devices using the Wearable API.
  */
+@SuppressWarnings("unused")
 public final class Packager {
 
     private static final Map<Class, DataPackager> PACKAGERS = new LinkedHashMap<Class, DataPackager>();
@@ -28,7 +31,7 @@ public final class Packager {
     public interface DataPackager<T> {
         public DataMap pack(T target);
         public void pack(T target, DataMap map);
-        public T unpack(DataMap map);
+        public T unpack(Context context, DataMap map);
     }
 
     /**
@@ -180,15 +183,15 @@ public final class Packager {
      * If this is not possible, this method will then attempt to deserialize the byte array contained
      * in the DataItem using the {@link java.io.Serializable} system.
      *
+     * @param context The Context that may be used to load Assets from the data.
      * @param data  The DataItem to load the object from.
      * @param targetClass The class of object to unpack.
      * @return An object of the given class.
      */
-    @SuppressWarnings("unused") // Used by generated classes
-    public static <T> T unpack(DataItem data, Class<T> targetClass) {
+    public static <T> T unpack(Context context, DataItem data, Class<T> targetClass) {
         try {
             final DataMapItem dataMapItem = DataMapItem.fromDataItem(data);
-            return unpack(dataMapItem.getDataMap(), targetClass);
+            return unpack(context, dataMapItem.getDataMap(), targetClass);
         }catch (Exception e) {
             return unpackSerializable(data.getData());
         }
@@ -206,15 +209,15 @@ public final class Packager {
      * If this is not possible, this method will then attempt to deserialize the byte array
      * using the {@link java.io.Serializable} system.
      *
+     * @param context The Context that may be used to load Assets from the data.
      * @param data  The byte array to load the object from.
      * @param targetClass The class of object to unpack.
      * @return An object of the given class.
      */
-    @SuppressWarnings("unused") // Used by generated classes
-    public static <T> T unpack(byte[] data, Class<T> targetClass) {
+    public static <T> T unpack(Context context, byte[] data, Class<T> targetClass) {
         try {
             final DataMap dataMap = DataMap.fromByteArray(data);
-            return unpack(dataMap, targetClass);
+            return unpack(context, dataMap, targetClass);
         }catch (Exception e) {
             return unpackSerializable(data);
         }
@@ -229,17 +232,81 @@ public final class Packager {
      * This method will attempt to use generated code from the {@link Deliverable}
      * annotation to convert the DataMap to an object of the given class.
      *
+     * @param context The Context that may be used to load Assets from the data.
      * @param map  The DataItem to load the object from.
      * @param targetClass The class of object to unpack.
      * @return An object of the given class.
      */
-    public static <T> T unpack(DataMap map, Class<T> targetClass) {
+    public static <T> T unpack(Context context, DataMap map, Class<T> targetClass) {
         if(map==null) {
             return null;
         }
 
         final DataPackager<T> packager = getDataPackager(targetClass);
-        return packager.unpack(map);
+        return packager.unpack(context, map);
+    }
+
+    /**
+     * In general, this method will only be used by generated code. However, it may be suitable
+     * to use this method in some cases (such as in a WearableListenerService).
+     *
+     * Unpacks the given DataItem into an object of the given class.
+     *
+     * This method will attempt to load a DataMap from the DataItem and then use generated code from
+     * the {@link Deliverable} annotation to convert it to an object of the given class.
+     *
+     * If this is not possible, this method will then attempt to deserialize the byte array contained
+     * in the DataItem using the {@link java.io.Serializable} system.
+     *
+     * @param data  The DataItem to load the object from.
+     * @param targetClass The class of object to unpack.
+     * @return An object of the given class.
+     * @deprecated Use {@link #unpack(android.content.Context, com.google.android.gms.wearable.DataItem, Class)} instead to allow automatic Asset loading.
+     */
+    @Deprecated
+    public static <T> T unpack(DataItem data, Class<T> targetClass) {
+        return unpack(null, data, targetClass);
+    }
+
+    /**
+     * In general, this method will only be used by generated code. However, it may be suitable
+     * to use this method in some cases (such as in a WearableListenerService).
+     *
+     * Unpacks the given byte array into an object of the given class.
+     *
+     * This method will attempt to convert the byte array into a DataMap and then use generated code from
+     * the {@link Deliverable} annotation to convert it to an object of the given class.
+     *
+     * If this is not possible, this method will then attempt to deserialize the byte array
+     * using the {@link java.io.Serializable} system.
+     *
+     * @param data  The byte array to load the object from.
+     * @param targetClass The class of object to unpack.
+     * @return An object of the given class.
+     * @deprecated Use {@link #unpack(android.content.Context, byte[], Class)} instead to allow automatic Asset loading.
+     */
+    @Deprecated
+    public static <T> T unpack(byte[] data, Class<T> targetClass) {
+        return unpack(null, data, targetClass);
+    }
+
+    /**
+     * In general, this method will only be used by generated code. However, it may be suitable
+     * to use this method in some cases (such as in a WearableListenerService).
+     *
+     * Unpacks the given DataMap into an object of the given class.
+     *
+     * This method will attempt to use generated code from the {@link Deliverable}
+     * annotation to convert the DataMap to an object of the given class.
+     *
+     * @param map  The DataItem to load the object from.
+     * @param targetClass The class of object to unpack.
+     * @return An object of the given class.
+     * @deprecated Use {@link #unpack(android.content.Context, com.google.android.gms.wearable.DataMap, Class)} instead to allow automatic Asset loading.
+     */
+    @Deprecated
+    public static <T> T unpack(DataMap map, Class<T> targetClass) {
+        return unpack(null, map, targetClass);
     }
 
     @SuppressWarnings("unchecked")
