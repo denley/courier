@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Added
+- `Courier.isWearableApiAvailable` method, to determine wearable API availability.
+
 ### Fixed
 - Now uses a singleton `GoogleApiClient` for efficiency
 

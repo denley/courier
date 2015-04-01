@@ -44,6 +44,30 @@ public final class Courier {
 
     @Nullable private static GoogleApiClient googleApiClient = null;
 
+
+    /**
+     * Determines whether or not the Wearable API is available to communicate with a paired device. If this method
+     * returns false then all other methods in this class will silently fail (and {@link #getLocalNode} and {@link #getAssetInputStream} will return null).
+     *
+     * For the most part, this will return true if the user has the "Android Wear" app installed and has used it to pair a watch, and false otherwise.
+     *
+     * Note: This does not correspond to the connected state of the user's watch. If the user has a paired watch, but that watch
+     * is out of range, this will still return true.
+     *
+     * This method must not be called from the main thread.
+     *
+     * @param context   The The Context used to connect to the wearable API.
+     * @return          True, if the Wearable API is available, false otherwise.
+     */
+    public static boolean isWearableApiAvailable(final Context context) {
+        if(Looper.myLooper()==Looper.getMainLooper()) {
+            throw new IllegalStateException("hasPairedWearableDevice can not be called from the UI thread");
+        }
+
+        ensureApiClient(context);
+        return googleApiClient!=null;
+    }
+
     /**
      * Puts the given object to the specified path in the Wearable.DataApi.
      *
@@ -146,9 +170,9 @@ public final class Courier {
      * on the main thread.
      *
      * @param context The Context used to connect to the wearable API.
-     * @return a Node representing this device.
+     * @return a Node representing this device, or null if the Wearable API is unavailable.
      */
-    public static Node getLocalNode(final Context context) {
+    @Nullable public static Node getLocalNode(final Context context) {
         if(Looper.myLooper()==Looper.getMainLooper()) {
             throw new IllegalStateException("getLocalNode can not be called from the UI thread");
         }
@@ -167,9 +191,9 @@ public final class Courier {
      *
      * @param context The Context used to connect to the wearable API.
      * @param asset The asset to open a stream for.
-     * @return An InputStream containing the data for the given asset.
+     * @return An InputStream containing the data for the given asset, or null if the Wearable API is unavailable.
      */
-    public static InputStream getAssetInputStream(final Context context, final Asset asset) {
+    @Nullable public static InputStream getAssetInputStream(final Context context, final Asset asset) {
         if(Looper.myLooper()==Looper.getMainLooper()) {
             throw new IllegalStateException("getAssetInputStream can not be called from the UI thread");
         }
