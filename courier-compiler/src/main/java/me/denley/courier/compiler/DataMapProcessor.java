@@ -68,7 +68,7 @@ public class DataMapProcessor extends AbstractProcessor {
 
     private void checkForErrors(Element element) {
         if(element.getKind()!=ElementKind.CLASS) {
-            throw new IllegalArgumentException("@DataMap only applies to classes");
+            throw new IllegalArgumentException("@Deliverable only applies to classes");
         }
     }
 
@@ -214,7 +214,8 @@ public class DataMapProcessor extends AbstractProcessor {
                         builder.append(INDENT_3).append("map.putAsset(\"").append(name).append("\", ").append(name).append("Asset);\n");
                         builder.append(INDENT_2).append("}\n");
                     } else {
-                        throw new IllegalArgumentException("Field type ("+subElement.asType().toString()+") is not mappable to a DataMap.");
+                        // Bad field type, show an error linking to this specific element
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field type not supported ("+fieldType+").", subElement);
                     }
                 } else {
                     builder.append(INDENT_2).append("map.").append(elementType.putMethod)
@@ -248,12 +249,13 @@ public class DataMapProcessor extends AbstractProcessor {
                 final DataMapElementType elementType = DataMapElementType.getElementType(subElement);
                 if(elementType==null) {
                     final String fieldType = subElement.asType().toString();
+
                     if(targetClassNames.contains(fieldType)) {
                         builder.append(INDENT_2).append("target.").append(name).append(" = ");
                         builder.append("Packager.unpack(")
                                 .append("map.getDataMap(\"").append(name)
                                 .append("\"), ")
-                                .append(subElement.asType().toString()).append(".class);\n");
+                                .append(fieldType).append(".class);\n");
                     } else if (fieldType.equals(BITMAP)) {
                         builder.append(INDENT_2).append("final Asset ").append(name).append("Asset = map.getAsset(\"").append(name).append("\");\n");
                         builder.append(INDENT_2).append("if(").append(name).append("Asset!=null && context!=null) {\n");
@@ -261,7 +263,8 @@ public class DataMapProcessor extends AbstractProcessor {
                         builder.append(INDENT_3).append("target.").append(name).append(" = BitmapFactory.decodeStream(in);\n");
                         builder.append(INDENT_2).append("}\n");
                     } else {
-                        throw new IllegalArgumentException("Field type ("+subElement.asType().toString()+") is not mappable to a DataMap.");
+                        // Bad field type, show an error linking to this specific element
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field type not supported ("+fieldType+").", subElement);
                     }
                 } else {
                     builder.append(INDENT_2).append("target.").append(name).append(" = ");
