@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -70,6 +71,31 @@ public final class Packager {
      * In general, this method will only be used by generated code. However, it may be suitable
      * to use this method in some cases (such as in a WearableListenerService).
      *
+     * Packages the given array of objects into an array of DataMaps.
+     *
+     * This method will attempt to convert each object to a DataMap using generated code from
+     * the {@link Deliverable} annotation.
+     *
+     * If this is not possible, a {@link java.lang.RuntimeException} will be thrown.
+     *
+     * @param deliverablse  The objectn to serialize into DataMaps.
+     * @return An ArrayList of DataMaps representing the the object.
+     * @throws java.lang.RuntimeException If the packager for the object's class could not be found
+     */
+    public static ArrayList<DataMap> pack(ArrayList<?> deliverables) {
+        final ArrayList<DataMap> packed = new ArrayList<DataMap>();
+        if(deliverables != null) {
+            for(Object deliverable:deliverables) {
+                packed.add(pack(deliverable));
+            }
+        }
+        return packed;
+    }
+
+    /**
+     * In general, this method will only be used by generated code. However, it may be suitable
+     * to use this method in some cases (such as in a WearableListenerService).
+     *
      * Packages the given object into a byte array.
      *
      * This method will attempt to convert the object to a DataMap using generated code from
@@ -102,8 +128,9 @@ public final class Packager {
      *
      * If this is not possible, a {@link java.lang.ClassCastException} will be thrown.
      *
-     * @param deliverable  The object to serialize into bytes.
+     * @param deliverable  The object to serialize into a DataMap.
      * @return A DataMap representing the the object.
+     * @throws java.lang.RuntimeException If the packager for the object's class could not be found
      */
     @SuppressWarnings("unchecked")
     public static DataMap pack(Object deliverable) {
@@ -112,6 +139,11 @@ public final class Packager {
         }
 
         final DataPackager packager = getDataPackager(deliverable.getClass());
+        if(packager == null) {
+            throw new RuntimeException("Unable to find packager for the given object. " +
+                    "Please ensure that the object's class is annotated with @Deliverable, " +
+                    "and that the annotation processor has run correctly");
+        }
         return packager.pack(deliverable);
     }
 
@@ -169,6 +201,40 @@ public final class Packager {
         }catch (Exception e){
             throw new IllegalArgumentException("Unable to deserialize object", e);
         }
+    }
+
+    /**
+     * In general, this method will only be used by generated code. However, it may be suitable
+     * to use this method in some cases (such as in a WearableListenerService).
+     *
+     * Unpacks the given ArrayList of DataMaps into an ArrayList of objects of the given class.
+     *
+     * This method will attempt to use generated code from the {@link Deliverable}
+     * annotation to convert each DataMap to an object of the given class.
+     *
+     * @param context The Context that may be used to load Assets from the data.
+     * @param maps  The DataItems to load the object from.
+     * @param targetClass The class of object to unpack.
+     * @return An ArrayList of objects of the given class.
+     * * @throws java.lang.RuntimeException If the packager for targetClass could not be found
+     */
+    public static <T> ArrayList<T> unpack(Context context, ArrayList<DataMap> maps, Class<T> targetClass) {
+        if(maps==null) {
+            return null;
+        }
+
+        final DataPackager<T> packager = getDataPackager(targetClass);
+        if(packager == null) {
+            throw new RuntimeException("Unable to find packager for " + targetClass.toString() +
+                    "Please ensure that it is annotated with @Deliverable, " +
+                    "and that the annotation processor has run correctly");
+        }
+
+        final ArrayList<T> unpacked = new ArrayList<T>();
+        for(DataMap map:maps) {
+            unpacked.add(packager.unpack(context, map));
+        }
+        return unpacked;
     }
 
     /**
@@ -236,6 +302,7 @@ public final class Packager {
      * @param map  The DataItem to load the object from.
      * @param targetClass The class of object to unpack.
      * @return An object of the given class.
+     * * @throws java.lang.RuntimeException If the packager for targetClass could not be found
      */
     public static <T> T unpack(Context context, DataMap map, Class<T> targetClass) {
         if(map==null) {
@@ -243,6 +310,11 @@ public final class Packager {
         }
 
         final DataPackager<T> packager = getDataPackager(targetClass);
+        if(packager == null) {
+            throw new RuntimeException("Unable to find packager for " + targetClass.toString() +
+                    "Please ensure that it is annotated with @Deliverable, " +
+                    "and that the annotation processor has run correctly");
+        }
         return packager.unpack(context, map);
     }
 

@@ -14,6 +14,7 @@ public class Song {
 
     public String title;
     public Artist artist;
+    public ArrayList<Artist> featuredArtists;
     public long length;
     public Bitmap albumArt;
 

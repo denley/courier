@@ -213,6 +213,9 @@ public class DataMapProcessor extends AbstractProcessor {
                         builder.append(INDENT_3).append("final Asset ").append(name).append("Asset = Asset.createFromBytes(").append(name).append("ByteArrayOutputStream.toByteArray());\n");
                         builder.append(INDENT_3).append("map.putAsset(\"").append(name).append("\", ").append(name).append("Asset);\n");
                         builder.append(INDENT_2).append("}\n");
+                    } else if (fieldType.startsWith("java.util.ArrayList")) {
+                        builder.append(INDENT_2).append("map.putDataMapArrayList(\"").append(name).append("\", ")
+                                .append("Packager.pack(target.").append(name).append("));\n");
                     } else {
                         // Bad field type, show an error linking to this specific element
                         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field type not supported ("+fieldType+").", subElement);
@@ -252,7 +255,7 @@ public class DataMapProcessor extends AbstractProcessor {
 
                     if(targetClassNames.contains(fieldType)) {
                         builder.append(INDENT_2).append("target.").append(name).append(" = ");
-                        builder.append("Packager.unpack(")
+                        builder.append("Packager.unpack(context, ")
                                 .append("map.getDataMap(\"").append(name)
                                 .append("\"), ")
                                 .append(fieldType).append(".class);\n");
@@ -262,6 +265,24 @@ public class DataMapProcessor extends AbstractProcessor {
                         builder.append(INDENT_3).append("final InputStream in = Courier.getAssetInputStream(context, ").append(name).append("Asset);\n");
                         builder.append(INDENT_3).append("target.").append(name).append(" = BitmapFactory.decodeStream(in);\n");
                         builder.append(INDENT_2).append("}\n");
+                    } else if (fieldType.startsWith("java.util.ArrayList")) {
+                        if(fieldType.endsWith(">")) {
+                            final String itemType = fieldType.substring(20, fieldType.length() - 1);
+
+                            if(itemType.isEmpty() || itemType.startsWith("?")) {
+                                // We need the item type to unpack
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Wildcard generic types are not allowed", subElement);
+                            } else {
+                                builder.append(INDENT_2).append("target.").append(name).append(" = ");
+                                builder.append("Packager.unpack(context, ")
+                                        .append("map.getDataMapArrayList(\"").append(name)
+                                        .append("\"), ")
+                                        .append(itemType).append(".class);\n");
+                            }
+                        } else {
+                            // We need the item type to unpack
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Generic type must be specified for ArrayLists.", subElement);
+                        }
                     } else {
                         // Bad field type, show an error linking to this specific element
                         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field type not supported ("+fieldType+").", subElement);

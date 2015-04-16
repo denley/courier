@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+### Unreleased
+- `@Deliverable` annotated classes can now contain fields that are ArrayLists of other `@Deliverable` annotated classes
+
 ### 1.1.0 - 2015-04-02
 - Added `Courier.isWearableApiAvailable` method, to determine wearable API availability.
 - Added `Courier.attachMockDataApi`, `Courier.attachMockMessageApi`, and `Courier.attachMockNodeApi` methods to support mocking communication for unit testing.
