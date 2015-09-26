@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 21
+        targetSdkVersion 23
     }
     buildTypes {
         release {
@@ -40,7 +40,7 @@ dependencies {
     //compile 'me.denley.courier:courier-compiler:' + project.VERSION_NAME
 
 
-    compile 'com.google.android.gms:play-services-wearable:6.5.87'
+    compile 'com.google.android.gms:play-services-wearable:8.1.0'
 }
 
 apply from: 'android-release-aar.gradle'

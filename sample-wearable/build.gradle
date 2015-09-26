@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         applicationId project.PACKAGE_NAME + '.sample'
         minSdkVersion 20
-        targetSdkVersion 21
+        targetSdkVersion 23
         versionCode project.VERSION_CODE
         versionName project.VERSION_NAME
     }
@@ -27,5 +27,5 @@ dependencies {
     // This is used to test against release builds
 //    compile 'me.denley.courier:courier:' + project.VERSION_NAME
 
-    compile 'com.google.android.support:wearable:1.1.0'
+    compile 'com.google.android.support:wearable:1.3.0'
 }
