@@ -43,8 +43,8 @@ public final class Courier {
 
     /** For use by generated code. Don't use this. */
     public interface DeliveryBoy<T> {
-        public void startReceiving(Context context, T target);
-        public void stopReceiving(T target);
+        void startReceiving(Context context, T target);
+        void stopReceiving(T target);
     }
 
 

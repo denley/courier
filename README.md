@@ -11,7 +11,7 @@ Usage
 
 Using the jcenter repository, add the following line to the gradle dependencies for your modules. You should add this to both your handheld and wearable modules.
 ```groovy
-compile 'me.denley.courier:courier:1.1.0'
+compile 'me.denley.courier:courier:1.2.0'
 ```
 
 ### Basic Usage

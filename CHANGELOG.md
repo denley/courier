@@ -2,8 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-### Unreleased
+### 1.2.0 - 2015-09-26
 - `@Deliverable` annotated classes can now contain fields that are ArrayLists of other `@Deliverable` annotated classes
+- Update Google Play Services version to resolve its breaking changes.
 
 ### 1.1.0 - 2015-04-02
 - Added `Courier.isWearableApiAvailable` method, to determine wearable API availability.
