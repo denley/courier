@@ -21,6 +21,6 @@ allprojects {
 ext  {
     PACKAGE_NAME = "me.denley.courier"
     ARTIFACT_ID = 'courier'
-    VERSION_NAME = '1.2.0'
-    VERSION_CODE = 13
+    VERSION_NAME = '1.2.1'
+    VERSION_CODE = 14
 }
