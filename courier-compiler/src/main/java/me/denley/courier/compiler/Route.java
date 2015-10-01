@@ -19,7 +19,7 @@ class Route {
             final String name = "as_"+type.replace(".", "_");
             builder.append(indent).append(PostalArea.INDENT).append("final ")
                     .append(type).append(" ").append(name)
-                    .append(" = Packager.unpack(")
+                    .append(" = Packager.unpack(context, ")
                     .append(dataVariable).append(", ")
                     .append(type).append(".class")
                     .append(");\n\n");
